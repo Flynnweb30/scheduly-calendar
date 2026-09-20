@@ -1,0 +1,4131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scheduly — Calendar Booking Tool developed by Flynn J.P</title>
+  <meta name="description" content="Scheduly is a modern appointment and calendar booking tool developed by Flynn J.P. Featuring custom logo uploads, custom date range booking horizons, EmailJS automated reminders, timezone auto-detection, and host privacy controls." />
+  <meta property="og:title" content="Scheduly — Calendar Booking Tool developed by Flynn J.P" />
+  <meta property="og:description" content="Scheduly is a modern appointment and calendar booking tool developed by Flynn J.P. Featuring custom logo uploads, custom date range booking horizons, EmailJS automated reminders, timezone auto-detection, and host privacy controls." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- EmailJS Browser SDK for automated email reminders -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & DESIGN SYSTEM (Zero External Dependencies)
+       ========================================================================== */
+    :root {
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff6ff;
+      --color-primary-border: #bfdbfe;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-surface-hover: #f1f5f9;
+      --color-text: #0f172a;
+      --color-text-muted: #64748b;
+      --color-text-light: #94a3b8;
+      --color-border: #e2e8f0;
+      --color-border-hover: #cbd5e1;
+      --color-success: #10b981;
+      --color-success-bg: #ecfdf5;
+      --color-danger: #ef4444;
+      --color-danger-bg: #fef2f2;
+      --color-warning: #f59e0b;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Dark Mode Override */
+    body.dark-mode {
+      --color-bg: #0b1120;
+      --color-surface: #131d31;
+      --color-surface-hover: #1e293b;
+      --color-text: #f8fafc;
+      --color-text-muted: #94a3b8;
+      --color-text-light: #64748b;
+      --color-border: #26354f;
+      --color-border-hover: #334155;
+      --color-primary-subtle: #1e2e4a;
+      --color-primary-border: #2b4570;
+      --color-success: #34d399;
+      --color-success-bg: #064e3b;
+      --color-danger: #f87171;
+      --color-danger-bg: #450a0a;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: var(--font-family);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 32px 24px;
+      }
+    }
+
+    /* Top Navigation / App Bar */
+    .app-header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 12px 20px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--color-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 40px;
+    }
+
+    .tab-btn:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text);
+      border-color: var(--color-border-hover);
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      border-color: var(--color-primary-border);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 38px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-surface-hover);
+      border-color: var(--color-border-hover);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      background: var(--color-primary);
+      color: #ffffff;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-height: 44px;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Main Container Card */
+    .main-wrapper {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      min-height: 620px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Booking View Layout: Multi-column on desktop, stacked on mobile */
+    .booking-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 620px;
+    }
+
+    @media (min-width: 768px) {
+      .booking-grid {
+        grid-template-columns: 280px 1fr;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .booking-grid {
+        grid-template-columns: 310px 380px 1fr;
+      }
+    }
+
+    /* Left Column: Event & Host Sidebar */
+    .sidebar {
+      padding: 28px 24px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: #fafbfe;
+    }
+
+    @media (min-width: 768px) {
+      .sidebar {
+        border-bottom: none;
+        border-right: 1px solid var(--color-border);
+      }
+    }
+
+    .host-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .host-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    .host-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.3;
+    }
+
+    .host-meta p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+
+    .event-type-picker-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--color-text-light);
+      margin-bottom: 8px;
+    }
+
+    .event-type-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .event-type-card {
+      padding: 14px 16px;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-align: left;
+    }
+
+    .event-type-card:hover {
+      border-color: var(--color-border-hover);
+      background: var(--color-surface-hover);
+      transform: translateY(-1px);
+    }
+
+    .event-type-card.selected {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+      box-shadow: 0 0 0 1px var(--color-primary);
+    }
+
+    .event-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .event-card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--color-text);
+    }
+
+    .event-duration-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .event-type-card.selected .event-duration-badge {
+      background: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .event-card-desc {
+      font-size: 0.825rem;
+      color: var(--color-text-muted);
+      line-height: 1.4;
+    }
+
+    .selected-summary-box {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Middle Column: Interactive Calendar Month View */
+    .calendar-pane {
+      padding: 28px 24px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      .calendar-pane {
+        border-bottom: none;
+        border-right: 1px solid var(--color-border);
+      }
+    }
+
+    .calendar-header {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .calendar-month-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .nav-arrow-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .nav-arrow-btn:hover:not(:disabled) {
+      background: var(--color-surface-hover);
+      border-color: var(--color-border-hover);
+    }
+
+    .nav-arrow-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .calendar-grid {
+      width: 100%;
+      max-width: 340px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .weekday-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-light);
+      padding: 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .day-btn {
+      aspect-ratio: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: 1.5px solid transparent;
+      background: transparent;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .day-btn:hover:not(:disabled) {
+      background: var(--color-surface-hover);
+      border-color: var(--color-primary-border);
+    }
+
+    .day-btn.has-slots {
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    .day-btn.selected {
+      background: var(--color-primary) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .day-btn.today::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .day-btn:disabled {
+      color: var(--color-border-hover);
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    .day-btn.empty {
+      cursor: default;
+      opacity: 0;
+    }
+
+    .timezone-bar {
+      width: 100%;
+      max-width: 340px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timezone-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timezone-select {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 0.825rem;
+      font-family: inherit;
+      color: var(--color-text);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .timezone-select:focus {
+      border-color: var(--color-primary);
+    }
+
+    /* Right Column: Time Slots List */
+    .slots-pane {
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      max-height: 620px;
+      overflow-y: auto;
+    }
+
+    .slots-header-date {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 16px;
+    }
+
+    .slots-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .slot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slot-btn {
+      flex: 1;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-primary-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 200ms ease,
+                  border-color 200ms ease,
+                  box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+                  color 180ms ease;
+      will-change: transform, box-shadow;
+    }
+
+    .slot-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+      opacity: 0;
+      transition: opacity 200ms ease;
+      pointer-events: none;
+    }
+
+    .slot-btn:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+      transform: translateY(-2px) scale(1.012);
+      box-shadow: 0 6px 16px -2px rgba(37, 99, 235, 0.18), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    }
+
+    .slot-btn:hover::after {
+      opacity: 1;
+    }
+
+    .slot-btn:active {
+      transform: translateY(0) scale(0.985);
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .slot-btn.active {
+      background: #1e293b;
+      color: #ffffff;
+      border-color: #1e293b;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+      transform: scale(0.99);
+    }
+
+    body.dark-mode .slot-btn.active {
+      background: #334155;
+      color: #ffffff;
+      border-color: #475569;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+
+    .slot-confirm-btn {
+      padding: 12px 22px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: var(--color-primary);
+      color: #ffffff;
+      border: 1.5px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      animation: slotConfirmSlideIn 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+      transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 180ms ease,
+                  box-shadow 180ms ease;
+    }
+
+    .slot-confirm-btn:hover {
+      background: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -2px rgba(37, 99, 235, 0.42);
+    }
+
+    .slot-confirm-btn:active {
+      transform: translateY(0) scale(0.97);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    @keyframes slotConfirmSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateX(14px) scale(0.92);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+    }
+
+    .empty-slots {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--color-text-muted);
+      gap: 12px;
+    }
+
+    .empty-icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-text-light);
+    }
+
+    /* Booking Form View (Step 3: Attendee Details) */
+    .form-view {
+      padding: 32px 24px;
+      max-width: 640px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .back-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 20px;
+      padding: 4px 0;
+    }
+
+    .back-nav-btn:hover {
+      color: var(--color-text);
+    }
+
+    .form-header {
+      margin-bottom: 24px;
+    }
+
+    .form-header h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .meeting-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: var(--color-primary-subtle);
+      border: 1px solid var(--color-primary-border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .form-label span.req {
+      color: var(--color-danger);
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--color-text);
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-input.invalid {
+      border-color: var(--color-danger);
+      background: var(--color-danger-bg);
+    }
+
+    .field-error {
+      font-size: 0.775rem;
+      color: var(--color-danger);
+      display: none;
+    }
+
+    .field-error.visible {
+      display: block;
+    }
+
+    /* Confirmation / Success Screen */
+    .confirmation-view {
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 580px;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    .success-icon-wrap {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.12);
+    }
+
+    .confirmation-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .confirmation-desc {
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .booking-summary-card {
+      width: 100%;
+      padding: 20px;
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.9rem;
+    }
+
+    .summary-row svg {
+      width: 20px;
+      height: 20px;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .calendar-export-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    /* Host Settings / Management View */
+    .host-view {
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--color-text);
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 840px) {
+      .settings-grid {
+        grid-template-columns: 1.1fr 1fr;
+      }
+    }
+
+    .settings-card {
+      padding: 22px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .settings-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .day-schedule-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .day-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .time-input {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-bg);
+      color: var(--color-text);
+      outline: none;
+    }
+
+    .time-input:focus {
+      border-color: var(--color-primary);
+    }
+
+    .bookings-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .bookings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      text-align: left;
+    }
+
+    .bookings-table th {
+      background: var(--color-surface-hover);
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
+    }
+
+    .bookings-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      color: var(--color-text);
+    }
+
+    /* Google Sheets Sync Pill & Guide */
+    .sheets-sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.725rem;
+      font-weight: 700;
+    }
+
+    .sheets-sync-active {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    body.dark-mode .sheets-sync-active {
+      background: #14532d;
+      color: #86efac;
+      border-color: #166534;
+    }
+
+    .sheets-sync-idle {
+      background: var(--color-surface-hover);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+    }
+
+    .sheets-guide-box {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .code-snippet-box {
+      position: relative;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.75rem;
+      overflow-x: auto;
+      margin-top: 8px;
+      border: 1px solid #334155;
+    }
+
+    .bookings-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .status-confirmed {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+    }
+
+    .status-cancelled {
+      background: var(--color-danger-bg);
+      color: var(--color-danger);
+    }
+
+    .btn-cancel-booking {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-danger);
+      background: var(--color-danger-bg);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .btn-cancel-booking:hover {
+      background: #fee2e2;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Helper utilities */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Logo Upload & Display Styles */
+    .brand-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .host-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .logo-upload-dropzone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--color-bg);
+      transition: all var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-upload-dropzone:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+
+    .logo-preview-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+    }
+
+    .logo-preview-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+    }
+
+    /* Custom Horizon Date Range Inputs */
+    .horizon-date-range {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    /* EmailJS & Integrations */
+    .email-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .email-status-sent {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .email-status-none {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .email-status-error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .emailjs-vars-guide {
+      font-size: 0.75rem;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-top: 10px;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+
+    .emailjs-vars-guide code {
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--color-primary);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-family: monospace;
+    }
+
+    /* Host PIN & Privacy Security Modal */
+    .pin-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 16px;
+    }
+
+    .pin-modal-backdrop.show {
+      display: flex;
+    }
+
+    .pin-modal-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow-xl);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalScaleIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalScaleIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .pin-input {
+      font-size: 1.5rem;
+      text-align: center;
+      letter-spacing: 0.3em;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      outline: none;
+    }
+
+    .pin-input:focus {
+      border-color: var(--color-primary);
+    }
+
+    /* Bookings Toolbar & Search */
+    .bookings-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 12px;
+    }
+
+    .search-input-box {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+      max-width: 380px;
+    }
+
+    .search-input-box input {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    .search-input-box svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-light);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-pill {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      cursor: pointer;
+    }
+
+    .filter-pill.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+    }
+
+    .theme-toggle-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--color-surface-hover);
+    }
+
+    /* Host Controls & Admin / User Header Architecture */
+    .host-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .host-status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #15803d;
+      background: #dcfce7;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid #bbf7d0;
+      letter-spacing: 0.03em;
+    }
+
+    body.dark-mode .host-status-indicator {
+      background: #14532d;
+      color: #86efac;
+      border-color: #166534;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse-dot 1.8s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+      }
+    }
+
+    /* Discreet Footer */
+    .app-footer {
+      width: 100%;
+      max-width: 1080px;
+      margin: 24px auto 36px;
+      padding: 0 20px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--color-text-light);
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .footer-host-link {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+      opacity: 0.65;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .footer-host-link:hover {
+      opacity: 1;
+      color: var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Application Navigation Header -->
+  <header class="app-header" id="app-header">
+    <div class="brand-group" id="brand-group" ondblclick="app.promptHostLogin()" title="Scheduly — Developed by Flynn J.P (Double-click for Host Gateway)" style="cursor: pointer;">
+      <div class="brand-badge" id="brand-badge-el" aria-hidden="true">
+        📅
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h1 class="brand-title" id="header-brand-title">Scheduly</h1>
+          <!-- Active Host Mode indicator pill (visible ONLY when Flynn is authenticated) -->
+          <span class="host-status-indicator" id="host-status-indicator" style="display: none;">
+            <span class="pulse-dot"></span> Host Mode
+          </span>
+        </div>
+        <p class="brand-subtitle" id="header-brand-subtitle">Developed by Flynn J.P</p>
+      </div>
+    </div>
+
+    <div class="nav-actions" id="nav-actions">
+      <!-- HOST-ONLY NAVIGATION: Strictly visible ONLY when Flynn J.P is authenticated as host! -->
+      <div class="host-controls-group" id="host-controls-group" style="display: none;">
+        <button type="button" class="tab-btn" id="tab-public-view" onclick="app.switchView('public')" title="Preview attendee booking view">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Public Preview
+        </button>
+
+        <button type="button" class="tab-btn active" id="tab-host-view" onclick="app.switchView('host')" title="Manage availability, bookings, and integrations">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Host Dashboard (<span id="confirmed-badge-count">0</span>)
+        </button>
+
+        <button type="button" class="btn-secondary" id="btn-copy-link" onclick="app.copyShareLink()" title="Copy clean booking link for attendees (contains no admin controls)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          Copy Client Link
+        </button>
+
+        <button type="button" class="tab-btn" id="btn-lock-host" onclick="app.lockHostMode()" title="Exit host mode and lock dashboard">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Lock Host
+        </button>
+      </div>
+
+      <!-- Theme Switcher (Dark / Light) - Always available for everyone -->
+      <button type="button" class="theme-toggle-btn" id="btn-theme-toggle" onclick="app.toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Central Card Viewport -->
+  <main class="main-wrapper" id="main-card">
+    
+    <!-- ====================================================================
+         VIEW 1: PUBLIC BOOKING (Steps: Calendar -> Form -> Confirmation)
+         ==================================================================== -->
+    <div id="public-booking-container" style="display: block;">
+      
+      <!-- STEP 1 & 2: Grid with Event Types, Calendar & Time Slots -->
+      <section class="booking-grid" id="calendar-flow-view" aria-label="Appointment Booking Form">
+        
+        <!-- Sidebar: Host Info & Event Selection -->
+        <aside class="sidebar" id="booking-sidebar">
+          <div class="host-profile" id="host-profile-card">
+            <div class="host-avatar" id="host-avatar-display">JS</div>
+            <div class="host-meta">
+              <h3 id="host-name-display">Alex Morgan</h3>
+              <p id="host-role-display">Senior Consultant</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="event-type-picker-title">Select Meeting Type</div>
+            <div class="event-type-list" id="event-type-list" role="radiogroup" aria-label="Meeting Duration Options">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="selected-summary-box" id="selected-summary-box">
+            <div class="summary-item">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span id="sidebar-duration-text">30 min meeting</span>
+            </div>
+            <div class="summary-item">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <span>Web meeting details provided upon booking</span>
+            </div>
+            <div class="summary-item">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>
+              <span id="sidebar-timezone-text">Detecting timezone...</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center: Interactive Calendar -->
+        <div class="calendar-pane" id="calendar-pane">
+          <div class="calendar-header">
+            <h2 class="calendar-month-title" id="calendar-month-display">September 2026</h2>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="nav-arrow-btn" id="btn-prev-month" onclick="app.prevMonth()" aria-label="Previous Month">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button type="button" class="nav-arrow-btn" id="btn-next-month" onclick="app.nextMonth()" aria-label="Next Month">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="calendar-grid" id="calendar-grid" role="grid" aria-label="Calendar date selection">
+            <!-- Day labels and dates populated dynamically -->
+          </div>
+
+          <div class="timezone-bar">
+            <label class="timezone-label" for="user-timezone-select">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              Timezone
+            </label>
+            <select class="timezone-select" id="user-timezone-select" onchange="app.changeTimezone(this.value)">
+              <!-- Populated dynamically with popular global timezones -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Right: Time Slots -->
+        <div class="slots-pane" id="slots-pane" aria-live="polite">
+          <h3 class="slots-header-date" id="selected-day-heading">Select a date</h3>
+          <div class="slots-list" id="slots-list-container">
+            <div class="empty-slots">
+              <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <p>Choose an available date from the calendar to view bookable meeting slots.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: Attendee Details Form -->
+      <section class="form-view" id="attendee-form-view" style="display: none;" aria-label="Enter your booking details">
+        <button type="button" class="back-nav-btn" onclick="app.backToCalendar()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Change date or time
+        </button>
+
+        <div class="form-header">
+          <h2>Enter Your Details</h2>
+          <div class="meeting-badge-row" id="form-summary-badge">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <form id="booking-submission-form" onsubmit="app.submitBooking(event)" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="attendee-name">Your Full Name <span class="req">*</span></label>
+            <input type="text" id="attendee-name" class="form-input" placeholder="e.g. Jane Doe" required />
+            <span class="field-error" id="err-attendee-name">Please enter your name (minimum 2 characters).</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="attendee-email">Email Address <span class="req">*</span></label>
+            <input type="email" id="attendee-email" class="form-input" placeholder="e.g. jane@company.com" required />
+            <span class="field-error" id="err-attendee-email">Please enter a valid email address.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="attendee-notes">Please share anything that will help prepare for our meeting</label>
+            <textarea id="attendee-notes" class="form-textarea" rows="4" placeholder="Brief agenda, topics of interest, or specific questions..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-confirm-booking" style="width: 100%;">
+            Confirm Booking
+          </button>
+        </form>
+      </section>
+
+      <!-- STEP 4: Confirmation Screen -->
+      <section class="confirmation-view" id="confirmation-view" style="display: none;" aria-label="Booking Confirmation">
+        <div class="success-icon-wrap">
+          <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+
+        <div>
+          <h2 class="confirmation-title">You're Scheduled!</h2>
+          <p class="confirmation-desc">A calendar invitation with meeting details has been prepared.</p>
+        </div>
+
+        <div class="booking-summary-card" id="confirmation-card-content">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="calendar-export-actions">
+          <a id="btn-google-calendar-link" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration: none;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Add to Google Calendar
+          </a>
+
+          <button type="button" class="btn-secondary" onclick="app.downloadICS()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download .ics File
+          </button>
+        </div>
+
+        <button type="button" class="back-nav-btn" onclick="app.resetBookingFlow()" style="margin-top: 12px;">
+          Schedule another meeting
+        </button>
+      </section>
+    </div>
+
+    <!-- ====================================================================
+         VIEW 2: HOST DASHBOARD & AVAILABILITY SETTINGS
+         ==================================================================== -->
+    <div id="host-dashboard-container" class="host-view" style="display: none;">
+      
+      <div class="section-title-row">
+        <div>
+          <h2 class="section-title">Host Availability & Settings</h2>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted);">Configure availability, custom logo, booking horizons, and automated EmailJS reminders.</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-primary" onclick="app.lockHostMode()" title="Switch back to visitor booking mode">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Preview as Visitor
+          </button>
+          <button type="button" class="btn-secondary" onclick="app.exportBookingsCSV()">
+            Export CSV
+          </button>
+          <button type="button" class="btn-secondary" onclick="app.exportBookingsJSON()">
+            Export JSON
+          </button>
+          <button type="button" class="btn-secondary" onclick="app.resetHostDefaults()">
+            Reset Defaults
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        
+        <!-- Branding & Custom Logo Upload -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Branding & Custom Logo
+          </div>
+          <p style="font-size: 0.825rem; color: var(--color-text-muted);">Upload your company or personal logo placeholder to display across Scheduly.</p>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label class="form-label">Brand / Host Logo</label>
+            
+            <div id="logo-preview-container" class="logo-preview-box" style="display: none; margin-bottom: 10px;">
+              <img id="logo-preview-img" src="" alt="Custom Logo Preview" class="logo-preview-thumb" />
+              <div>
+                <strong style="font-size: 0.85rem; display: block;">Custom Logo Active</strong>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">Shown on header, sidebar & confirmation</span>
+                <div style="margin-top: 6px;">
+                  <button type="button" class="btn-cancel-booking" onclick="app.removeLogo()">Remove Logo</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="logo-upload-dropzone" id="logo-dropzone" onclick="document.getElementById('setting-logo-file').click()">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: var(--color-text-muted);"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <div>
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-primary);">Click or drag & drop logo image</span>
+                <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px;">PNG, JPG, SVG, WebP up to 2MB</p>
+              </div>
+              <input type="file" id="setting-logo-file" accept="image/*" style="display: none;" onchange="app.handleLogoUpload(this.files[0])" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-host-name">Host Name</label>
+            <input type="text" id="setting-host-name" class="form-input" onchange="app.updateSettings('hostName', this.value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-host-role">Host Title / Headline</label>
+            <input type="text" id="setting-host-role" class="form-input" onchange="app.updateSettings('hostRole', this.value)" />
+          </div>
+        </div>
+
+        <!-- Weekly Working Hours -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Weekly Schedule & Hours
+          </div>
+          <p style="font-size: 0.825rem; color: var(--color-text-muted);">Set days and times when visitors can book slots with you.</p>
+
+          <div id="weekly-hours-list">
+            <!-- Populated dynamically: Mon-Sun toggles & time inputs -->
+          </div>
+        </div>
+
+        <!-- Buffer & Booking Horizon (with Custom Range) -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Rules & Booking Horizon
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-buffer-minutes">Buffer Time Between Meetings</label>
+            <select id="setting-buffer-minutes" class="form-input" onchange="app.updateSettings('bufferMinutes', parseInt(this.value, 10))">
+              <option value="0">0 minutes (Back-to-back)</option>
+              <option value="5">5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="15" selected>15 minutes (Recommended)</option>
+              <option value="30">30 minutes</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-notice-hours">Minimum Scheduling Notice</label>
+            <select id="setting-notice-hours" class="form-input" onchange="app.updateSettings('minimumNoticeHours', parseInt(this.value, 10))">
+              <option value="0">None (Book immediately)</option>
+              <option value="1">1 hour before slot</option>
+              <option value="2" selected>2 hours before slot</option>
+              <option value="4">4 hours before slot</option>
+              <option value="24">24 hours before slot</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-max-days">Booking Horizon Availability</label>
+            <select id="setting-max-days" class="form-input" onchange="app.updateHorizonSelection(this.value)">
+              <option value="14">14 days into future</option>
+              <option value="30">30 days into future</option>
+              <option value="60">60 days into future</option>
+              <option value="90">90 days into future</option>
+              <option value="custom">Custom Date Range (Specific Dates)...</option>
+            </select>
+
+            <!-- Custom Date Range Pickers (shown when custom is chosen) -->
+            <div id="custom-horizon-inputs" class="horizon-date-range" style="display: none;">
+              <div>
+                <label class="form-label" style="font-size: 0.75rem;" for="setting-horizon-start">Available From</label>
+                <input type="date" id="setting-horizon-start" class="form-input" onchange="app.updateCustomHorizon('start', this.value)" />
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.75rem;" for="setting-horizon-end">Available To</label>
+                <input type="date" id="setting-horizon-end" class="form-input" onchange="app.updateCustomHorizon('end', this.value)" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-meeting-location">Default Meeting Location</label>
+            <select id="setting-meeting-location" class="form-input" onchange="app.updateSettings('meetingLocationType', this.value)">
+              <option value="meet">Google Meet (Auto calendar link)</option>
+              <option value="zoom">Zoom Meeting</option>
+              <option value="phone">Phone Call</option>
+              <option value="in-person">In-Person Meeting</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-host-pin">Host Security Passcode (PIN)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="password" id="setting-host-pin" class="form-input" maxlength="8" placeholder="Default: 1234" onchange="app.updateSettings('hostPin', this.value || '1234')" />
+              <button type="button" class="btn-secondary" onclick="app.toggleSettingPinVisibility()" title="Show/Hide PIN" style="padding: 0 12px;">👁️</button>
+            </div>
+            <p style="font-size: 0.725rem; color: var(--color-text-muted); margin-top: 4px;">Protects this dashboard from visitor access when sharing the link.</p>
+          </div>
+
+          <div style="background: var(--color-surface-hover); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px; margin-top: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.825rem; font-weight: 700; color: var(--color-text);">
+              <span>🛡️ Host Access & Client Separation</span>
+            </div>
+            <p style="font-size: 0.775rem; color: var(--color-text-muted); margin-top: 4px; line-height: 1.4;">
+              • <strong>Visitor View:</strong> When you share your link, clients only see your calendar and event types with no host controls or login buttons.<br>
+              • <strong>Host Access:</strong> Log in anytime by visiting <code>/#admin</code>, clicking <em>Host Access 🔒</em> in the footer, or pressing <code>Ctrl+Shift+A</code>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Email Reminders (EmailJS Integration) -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            EmailJS Automated Reminders
+          </div>
+          <p style="font-size: 0.825rem; color: var(--color-text-muted);">Automatically send confirmation emails and calendar reminders to improve attendee show-up rates.</p>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="day-toggle-label" style="font-weight: 600;">
+              <input type="checkbox" id="setting-emailjs-enabled" onchange="app.updateEmailJsField('enabled', this.checked)" />
+              <span>Enable Automated Email Reminders</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-emailjs-service">EmailJS Service ID</label>
+            <input type="text" id="setting-emailjs-service" class="form-input" placeholder="e.g. service_xxxxxxx" onchange="app.updateEmailJsField('serviceId', this.value.trim())" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-emailjs-template">EmailJS Template ID</label>
+            <input type="text" id="setting-emailjs-template" class="form-input" placeholder="e.g. template_xxxxxxx" onchange="app.updateEmailJsField('templateId', this.value.trim())" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-emailjs-publickey">EmailJS Public Key (User ID)</label>
+            <input type="text" id="setting-emailjs-publickey" class="form-input" placeholder="e.g. xxxxxxxx_xxxx" onchange="app.updateEmailJsField('publicKey', this.value.trim())" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-emailjs-hostemail">Host Email (BCC / Notification copy)</label>
+            <input type="email" id="setting-emailjs-hostemail" class="form-input" placeholder="host@yourcompany.com" onchange="app.updateEmailJsField('hostEmail', this.value.trim())" />
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px;">
+            <button type="button" class="btn-primary" id="btn-test-emailjs" onclick="app.sendTestEmailJs()">
+              Send Test Email
+            </button>
+            <span id="emailjs-test-status" style="font-size: 0.8rem;"></span>
+          </div>
+
+          <div class="emailjs-vars-guide">
+            <strong>Template Variables Supported:</strong><br>
+            <code>{{to_name}}</code>, <code>{{to_email}}</code>, <code>{{event_title}}</code>, <code>{{event_date}}</code>, <code>{{event_time}}</code>, <code>{{host_name}}</code>, <code>{{meeting_location}}</code>, <code>{{attendee_notes}}</code>, <code>{{gcal_link}}</code>
+          </div>
+        </div>
+
+        <!-- Google Sheets Live Sync & CSV Template Integration -->
+        <div class="settings-card" id="settings-card-sheets">
+          <div class="settings-card-title">
+            <svg width="18" height="18" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Google Sheets Sync & CSV Template
+          </div>
+          <p style="font-size: 0.825rem; color: var(--color-text-muted);">
+            Sync confirmed appointments directly to your Google Sheets document via an automated Webhook / Web App URL hook, or export pre-formatted CSV templates.
+          </p>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="day-toggle-label" style="font-weight: 600;">
+              <input type="checkbox" id="setting-sheets-enabled" onchange="app.updateGoogleSheetsField('enabled', this.checked)" />
+              <span>Enable Real-time Sync to Google Sheets</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-sheets-webhook">Google Sheets Webhook / Apps Script URL Hook</label>
+            <input type="url" id="setting-sheets-webhook" class="form-input" placeholder="https://script.google.com/macros/s/.../exec or Webhook URL" onchange="app.updateGoogleSheetsField('webhookUrl', this.value.trim())" />
+            <p style="font-size: 0.725rem; color: var(--color-text-muted); margin-top: 4px;">Whenever a visitor books an appointment, Scheduly triggers this URL hook with the pre-formatted row.</p>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn-primary" id="btn-test-sheets" onclick="app.testGoogleSheetsSync()" style="background: #16a34a; border-color: #16a34a;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              Test Sync to Sheet
+            </button>
+            <button type="button" class="btn-secondary" onclick="app.downloadGoogleSheetsCsvTemplate()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download CSV Template
+            </button>
+            <button type="button" class="btn-secondary" onclick="app.toggleSheetsScriptGuide()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              1-Click Setup Guide
+            </button>
+            <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Google Sheets
+            </a>
+          </div>
+          <span id="sheets-test-status" style="font-size: 0.8rem; display: block; margin-top: 4px;"></span>
+
+          <!-- Expandable 1-Click Guide -->
+          <div id="sheets-script-guide" class="sheets-guide-box" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <strong style="color: var(--color-text);">Quick Google Sheets Hook Setup (60 seconds):</strong>
+              <button type="button" class="btn-secondary" style="padding: 3px 8px; font-size: 0.725rem;" onclick="app.copyGoogleAppsScriptCode()">Copy Apps Script Code</button>
+            </div>
+            <ol style="margin-top: 8px; margin-left: 18px; padding-left: 0; line-height: 1.6;">
+              <li>Create a new spreadsheet at <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600;">sheets.new</a></li>
+              <li>Click <strong>Extensions &gt; Apps Script</strong> in Google Sheets.</li>
+              <li>Replace existing code with the snippet below and click <strong>Deploy &gt; New deployment</strong>.</li>
+              <li>Select type: <strong>Web app</strong>, set "Who has access" to <strong>Anyone</strong>, click <strong>Deploy</strong> and copy the <em>Web app URL</em> into the input above!</li>
+            </ol>
+            <div class="code-snippet-box" id="google-apps-script-code">function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Booking ID", "Status", "Event Type", "Duration", "Date", "Time", "Timezone", "Host", "Attendee Name", "Attendee Email", "Location", "Notes", "Created At"]);
+    }
+    var data = JSON.parse(e.postData.contents);
+    var row = data.csvRow || [data.bookingId, data.status, data.eventTitle, data.duration + "m", data.date, data.time, data.timezone, data.hostName, data.attendeeName, data.attendeeEmail, data.location, data.notes, data.createdAt];
+    sheet.appendRow(row);
+    return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", message: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bookings Management Table -->
+      <div style="margin-top: 12px;">
+        <div class="section-title-row">
+          <div>
+            <h3 class="section-title">All Booked Meetings</h3>
+            <span style="font-size: 0.85rem; color: var(--color-text-muted);" id="bookings-count-label">0 total bookings</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn-secondary" onclick="app.syncAllPendingToSheets()" title="Sync any unsynced bookings to Google Sheets">
+              <svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Sync All to Sheets
+            </button>
+          </div>
+        </div>
+
+        <!-- Bookings Filter & Search Toolbar -->
+        <div class="bookings-toolbar">
+          <div class="search-input-box">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="bookings-search-input" placeholder="Search by name or email..." oninput="app.filterBookings(this.value)" />
+          </div>
+
+          <div class="filter-tabs">
+            <button type="button" class="filter-pill active" id="filter-pill-all" onclick="app.setBookingFilter('all')">All</button>
+            <button type="button" class="filter-pill" id="filter-pill-confirmed" onclick="app.setBookingFilter('confirmed')">Confirmed</button>
+            <button type="button" class="filter-pill" id="filter-pill-cancelled" onclick="app.setBookingFilter('cancelled')">Cancelled</button>
+          </div>
+        </div>
+
+        <div class="bookings-table-wrap" style="margin-top: 12px;">
+          <table class="bookings-table" id="bookings-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Event Type</th>
+                <th>Date & Time</th>
+                <th>Attendee</th>
+                <th>Email</th>
+                <th>Email Reminder</th>
+                <th>Google Sheets</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookings-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Application Footer with Subtle Host Gateway -->
+  <footer class="app-footer" id="app-footer">
+    <div class="footer-inner">
+      <span class="footer-copy">Scheduly © 2026 • Developed by Flynn J.P</span>
+      <div class="footer-links">
+        <a href="#admin" class="footer-host-link" id="footer-host-link" onclick="event.preventDefault(); app.promptHostLogin();" title="Host Administration Gateway (Shortcut: Ctrl+Shift+A)">
+          Host Access 🔒
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Host Security PIN Modal for Public Link Privacy Protection -->
+  <div class="pin-modal-backdrop" id="host-pin-modal" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+    <div class="pin-modal-card">
+      <div style="font-size: 2.25rem;">🔐</div>
+      <div>
+        <h3 id="pin-modal-title" style="font-size: 1.25rem; font-weight: 700; color: var(--color-text);">Host Administration</h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 6px; line-height: 1.4;">
+          Welcome back, Flynn J.P. Enter your Host PIN to access settings, working hours, and booking records.
+        </p>
+      </div>
+
+      <form onsubmit="app.submitHostPin(event)">
+        <div class="form-group" style="position: relative;">
+          <div style="display: flex; align-items: center; position: relative;">
+            <input type="password" id="host-pin-input" class="pin-input" maxlength="8" placeholder="Enter Host PIN" autocomplete="current-password" autofocus />
+            <button type="button" id="btn-toggle-pin-visibility" onclick="app.togglePinVisibility()" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 1.1rem; padding: 4px;" title="Show/Hide PIN">👁️</button>
+          </div>
+          <span class="field-error" id="err-host-pin">Incorrect passcode. Please verify and try again.</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin: 12px 0 16px; font-size: 0.8rem; color: var(--color-text-muted);">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="remember-host-checkbox" checked />
+            <span>Remember on this browser</span>
+          </label>
+          <span style="font-size: 0.75rem; color: var(--color-text-light);">Default PIN: 1234</span>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-secondary" style="flex: 1;" onclick="app.closeHostPinModal()">
+            Cancel (User View)
+          </button>
+          <button type="submit" class="btn-primary" style="flex: 1.2;">
+            Unlock Dashboard
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification element -->
+  <div class="toast" id="app-toast" role="status" aria-live="polite">
+    <span id="toast-message">Message</span>
+  </div>
+
+  <!-- ====================================================================
+       SINGLE-FILE JAVASCRIPT APPLICATION ENGINE
+       ==================================================================== -->
+  <script>
+    /**
+     * Calendly-Inspired Free Calendar Booking Tool
+     * Pure Native Vanilla JavaScript — Zero External Dependencies
+     */
+    (function () {
+      'use strict';
+
+      // ----------------------------------------------------------------------
+      // DEFAULT STORAGE INITIALIZATION & CONFIGURATION
+      // ----------------------------------------------------------------------
+      const STORAGE_KEYS = {
+        SETTINGS: 'scheduly_settings_v2',
+        BOOKINGS: 'scheduly_bookings_v2',
+        EVENT_TYPES: 'scheduly_events_v2'
+      };
+
+      const DEFAULT_SETTINGS = {
+        hostName: 'Flynn J.P',
+        hostRole: 'Senior Consultant & Product Advisor',
+        hostTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        logoUrl: null, // Base64 data URL or external URL
+        bufferMinutes: 15,
+        minimumNoticeHours: 2,
+        bookingHorizonDays: 60,
+        bookingHorizonType: 'days', // 'days' | 'custom'
+        horizonStartDate: '', // YYYY-MM-DD
+        horizonEndDate: '',   // YYYY-MM-DD
+        meetingLocationType: 'meet', // 'meet' | 'zoom' | 'phone' | 'in-person'
+        hostPin: '1234',
+        emailJs: {
+          enabled: false,
+          serviceId: '',
+          templateId: '',
+          publicKey: '',
+          hostEmail: ''
+        },
+        googleSheetsSync: {
+          enabled: false,
+          webhookUrl: '',
+          autoSync: true
+        },
+        weeklySchedule: {
+          1: { enabled: true, start: '09:00', end: '17:00' }, // Monday
+          2: { enabled: true, start: '09:00', end: '17:00' }, // Tuesday
+          3: { enabled: true, start: '09:00', end: '17:00' }, // Wednesday
+          4: { enabled: true, start: '09:00', end: '17:00' }, // Thursday
+          5: { enabled: true, start: '09:00', end: '16:00' }, // Friday
+          6: { enabled: false, start: '10:00', end: '14:00' }, // Saturday
+          0: { enabled: false, start: '10:00', end: '14:00' }  // Sunday
+        }
+      };
+
+      const DEFAULT_EVENT_TYPES = [
+        {
+          id: 'quick-15',
+          title: '15 Min Quick Sync',
+          duration: 15,
+          description: 'Brief check-in, intro chat, or quick decision alignment.'
+        },
+        {
+          id: 'standard-30',
+          title: '30 Min Consultation',
+          duration: 30,
+          description: 'Standard working session, strategic review, or project kick-off.'
+        },
+        {
+          id: 'deep-60',
+          title: '60 Min Deep Dive',
+          duration: 60,
+          description: 'Comprehensive product discovery, architecture, or deep planning.'
+        }
+      ];
+
+      // Deep merge utility for settings upgrade without wiping user config
+      function mergeDeep(target, source) {
+        for (const key in source) {
+          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            if (!target[key]) target[key] = {};
+            mergeDeep(target[key], source[key]);
+          } else if (target[key] === undefined) {
+            target[key] = source[key];
+          }
+        }
+        return target;
+      }
+
+      function loadStorage(key, fallback) {
+        try {
+          const item = localStorage.getItem(key);
+          if (!item) return JSON.parse(JSON.stringify(fallback));
+          const parsed = JSON.parse(item);
+          if (fallback && typeof fallback === 'object' && !Array.isArray(fallback)) {
+            return mergeDeep(parsed, JSON.parse(JSON.stringify(fallback)));
+          }
+          return parsed;
+        } catch (e) {
+          console.error('Storage load failed for ' + key, e);
+          return JSON.parse(JSON.stringify(fallback));
+        }
+      }
+
+      function saveStorage(key, data) {
+        try {
+          localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+          console.error('Storage write failed for ' + key, e);
+        }
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById('app-toast');
+        const text = document.getElementById('toast-message');
+        if (!toast || !text) return;
+        text.textContent = message;
+        toast.classList.add('visible');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('visible'), 3200);
+      }
+
+      // ----------------------------------------------------------------------
+      // CORE APPLICATION STATE
+      // ----------------------------------------------------------------------
+      const state = {
+        currentView: 'public', // 'public' | 'host'
+        bookingStep: 1, // 1: Calendar & Slots, 2: Attendee Form, 3: Confirmation
+        
+        settings: loadStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS),
+        eventTypes: loadStorage(STORAGE_KEYS.EVENT_TYPES, DEFAULT_EVENT_TYPES),
+        bookings: loadStorage(STORAGE_KEYS.BOOKINGS, []),
+
+        selectedEventType: null,
+        currentYear: new Date().getFullYear(),
+        currentMonth: new Date().getMonth(), // 0 - 11
+        selectedDate: null, // Date object (normalized to midnight)
+        selectedSlot: null, // { dateStr: 'YYYY-MM-DD', timeStr: 'HH:MM', startMs: number, endMs: number }
+        activeSlotTime: null, // which slot button is highlighted with "Next" visible
+        
+        userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        lastConfirmedBooking: null,
+
+        // Host Authentication & Privacy Control
+        isHostAuthenticated: false,
+        bookingsSearchQuery: '',
+        bookingsFilterStatus: 'all', // 'all' | 'confirmed' | 'cancelled'
+        theme: localStorage.getItem('scheduly_theme') || 'light'
+      };
+
+      // Set default selected event type
+      state.selectedEventType = state.eventTypes[1] || state.eventTypes[0];
+
+      // Auto-select today or tomorrow as default selected date if available
+      const today = new Date();
+      state.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      // ----------------------------------------------------------------------
+      // FORMATTERS & DATE UTILITIES
+      // ----------------------------------------------------------------------
+      function padZero(num) {
+        return num < 10 ? '0' + num : String(num);
+      }
+
+      function formatDateISO(date) {
+        return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+      }
+
+      function parseTimeToMinutes(timeStr) {
+        const [hours, mins] = timeStr.split(':').map(Number);
+        return hours * 60 + mins;
+      }
+
+      function formatMinutesToTime(totalMins) {
+        const h = Math.floor(totalMins / 60);
+        const m = totalMins % 60;
+        return `${padZero(h)}:${padZero(m)}`;
+      }
+
+      function formatDisplayTime(timeStr) {
+        const [hStr, mStr] = timeStr.split(':');
+        let h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'pm' : 'am';
+        h = h % 12 || 12;
+        return `${h}:${mStr} ${ampm}`;
+      }
+
+      function isSameDate(d1, d2) {
+        if (!d1 || !d2) return false;
+        return d1.getFullYear() === d2.getFullYear() &&
+               d1.getMonth() === d2.getMonth() &&
+               d1.getDate() === d2.getDate();
+      }
+
+      function getLocationDisplayText(type) {
+        switch (type) {
+          case 'zoom':
+            return 'Zoom Meeting (Link in confirmation)';
+          case 'phone':
+            return 'Phone Call (Host dials attendee)';
+          case 'in-person':
+            return 'In-Person (Office / Conference Room)';
+          case 'meet':
+          default:
+            return 'Google Meet (Web conference)';
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // AVAILABILITY & BOOKING HORIZON COMPUTATION
+      // ----------------------------------------------------------------------
+      function isDateWithinHorizon(date) {
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        // Past dates are never bookable
+        if (date < todayMidnight) return false;
+
+        if (state.settings.bookingHorizonType === 'custom') {
+          if (state.settings.horizonStartDate) {
+            const [sy, sm, sd] = state.settings.horizonStartDate.split('-').map(Number);
+            const startLimit = new Date(sy, sm - 1, sd);
+            if (date < startLimit) return false;
+          }
+          if (state.settings.horizonEndDate) {
+            const [ey, em, ed] = state.settings.horizonEndDate.split('-').map(Number);
+            const endLimit = new Date(ey, em - 1, ed, 23, 59, 59);
+            if (date > endLimit) return false;
+          }
+          return true;
+        } else {
+          const days = state.settings.bookingHorizonDays || 60;
+          const horizonLimit = new Date(todayMidnight.getTime() + days * 86400 * 1000);
+          return date <= horizonLimit;
+        }
+      }
+
+      /**
+       * Memoized slot calculator with double-booking prevention,
+       * buffer calculations, minimum scheduling notice, and custom date range horizon.
+       */
+      function calculateSlotsForDate(date) {
+        if (!date || !state.selectedEventType) return [];
+
+        // 1. Check booking horizon boundaries
+        if (!isDateWithinHorizon(date)) return [];
+
+        const dayOfWeek = date.getDay();
+        const schedule = state.settings.weeklySchedule[dayOfWeek];
+
+        // 2. Check host schedule enabled for this day
+        if (!schedule || !schedule.enabled) return [];
+
+        const now = new Date();
+        const minNoticeMs = (state.settings.minimumNoticeHours || 0) * 3600 * 1000;
+        const duration = state.selectedEventType.duration;
+        const buffer = state.settings.bufferMinutes || 0;
+        const startMinutes = parseTimeToMinutes(schedule.start);
+        const endMinutes = parseTimeToMinutes(schedule.end);
+
+        const activeBookings = state.bookings.filter(b => b.status === 'confirmed');
+        const slots = [];
+
+        for (let m = startMinutes; m + duration <= endMinutes; m += (duration + buffer)) {
+          const slotTimeStr = formatMinutesToTime(m);
+          
+          // Slot start & end timestamps
+          const slotStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(m / 60), m % 60);
+          const slotEnd = new Date(slotStart.getTime() + duration * 60 * 1000);
+
+          // Minimum notice filter: must be in the future beyond minimum notice
+          if (slotStart.getTime() <= now.getTime() + minNoticeMs) {
+            continue;
+          }
+
+          // Double-booking check: verify against existing bookings + buffers
+          const isOverlapping = activeBookings.some(booking => {
+            const bStart = booking.startMs;
+            const bEnd = booking.endMs;
+            const bBufferMs = buffer * 60 * 1000;
+            return (slotStart.getTime() < bEnd + bBufferMs) && (slotEnd.getTime() + bBufferMs > bStart);
+          });
+
+          if (!isOverlapping) {
+            slots.push({
+              timeStr: slotTimeStr,
+              displayTime: formatDisplayTime(slotTimeStr),
+              startMs: slotStart.getTime(),
+              endMs: slotEnd.getTime()
+            });
+          }
+        }
+
+        return slots;
+      }
+
+      function dateHasAvailableSlots(date) {
+        const slots = calculateSlotsForDate(date);
+        return slots.length > 0;
+      }
+
+      // ----------------------------------------------------------------------
+      // BRANDING & LOGO RENDERING
+      // ----------------------------------------------------------------------
+      function renderLogo() {
+        const logoUrl = state.settings.logoUrl;
+        const brandBadge = document.getElementById('brand-badge-el');
+        const avatarDisplay = document.getElementById('host-avatar-display');
+        const previewContainer = document.getElementById('logo-preview-container');
+        const previewImg = document.getElementById('logo-preview-img');
+
+        if (logoUrl) {
+          if (brandBadge) {
+            brandBadge.innerHTML = `<img src="${logoUrl}" alt="Scheduly Brand Logo" class="brand-logo-img" />`;
+          }
+          if (avatarDisplay) {
+            avatarDisplay.innerHTML = `<img src="${logoUrl}" alt="${escapeHTML(state.settings.hostName)}" class="host-avatar-img" />`;
+          }
+          if (previewContainer) previewContainer.style.display = 'flex';
+          if (previewImg) previewImg.src = logoUrl;
+        } else {
+          if (brandBadge) {
+            brandBadge.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+          }
+          if (avatarDisplay) {
+            const initials = state.settings.hostName
+              .split(' ')
+              .map(n => n[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase() || 'FP';
+            avatarDisplay.textContent = initials;
+          }
+          if (previewContainer) previewContainer.style.display = 'none';
+        }
+      }
+
+      function setupLogoDropzone() {
+        const dropzone = document.getElementById('logo-dropzone');
+        if (!dropzone) return;
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+          }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+          }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files && files[0]) {
+            app.handleLogoUpload(files[0]);
+          }
+        }, false);
+      }
+
+      // ----------------------------------------------------------------------
+      // HOST AUTHENTICATION & PRIVACY GUARD
+      // ----------------------------------------------------------------------
+      function syncHostAuthState() {
+        const hostControls = document.getElementById('host-controls-group');
+        const hostIndicator = document.getElementById('host-status-indicator');
+        const footerHostLink = document.getElementById('footer-host-link');
+
+        if (state.isHostAuthenticated) {
+          if (hostControls) hostControls.style.display = 'flex';
+          if (hostIndicator) hostIndicator.style.display = 'inline-flex';
+          if (footerHostLink) {
+            footerHostLink.textContent = 'Host: Flynn J.P (Active)';
+            footerHostLink.style.color = 'var(--color-primary)';
+          }
+        } else {
+          if (hostControls) hostControls.style.display = 'none';
+          if (hostIndicator) hostIndicator.style.display = 'none';
+          if (footerHostLink) {
+            footerHostLink.textContent = 'Host Access 🔒';
+            footerHostLink.style.color = '';
+          }
+
+          // If visitor is currently in host view while locked, bounce to public view
+          if (state.currentView === 'host') {
+            app.switchView('public');
+          }
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // THEME ENGINE (Dark & Light Mode)
+      // ----------------------------------------------------------------------
+      function applyTheme(theme) {
+        state.theme = theme;
+        localStorage.setItem('scheduly_theme', theme);
+        const icon = document.getElementById('theme-icon');
+        if (theme === 'dark') {
+          document.body.classList.add('dark-mode');
+          if (icon) icon.textContent = '☀️';
+        } else {
+          document.body.classList.remove('dark-mode');
+          if (icon) icon.textContent = '🌙';
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // RENDERERS: PUBLIC BOOKING VIEW
+      // ----------------------------------------------------------------------
+      function renderHostInfo() {
+        const nameDisplay = document.getElementById('host-name-display');
+        const roleDisplay = document.getElementById('host-role-display');
+
+        if (nameDisplay) nameDisplay.textContent = state.settings.hostName;
+        if (roleDisplay) roleDisplay.textContent = state.settings.hostRole;
+
+        renderLogo();
+
+        // Update settings inputs if present
+        const inputName = document.getElementById('setting-host-name');
+        const inputRole = document.getElementById('setting-host-role');
+        if (inputName) inputName.value = state.settings.hostName;
+        if (inputRole) inputRole.value = state.settings.hostRole;
+
+        // Update location select
+        const locSelect = document.getElementById('setting-meeting-location');
+        if (locSelect) locSelect.value = state.settings.meetingLocationType || 'meet';
+
+        // Update PIN input
+        const pinInput = document.getElementById('setting-host-pin');
+        if (pinInput) pinInput.value = state.settings.hostPin || '1234';
+      }
+
+      function renderEventTypes() {
+        const container = document.getElementById('event-type-list');
+        if (!container) return;
+
+        container.innerHTML = '';
+        state.eventTypes.forEach(evt => {
+          const isSelected = state.selectedEventType && state.selectedEventType.id === evt.id;
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = `event-type-card ${isSelected ? 'selected' : ''}`;
+          card.setAttribute('role', 'radio');
+          card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+          card.onclick = () => {
+            state.selectedEventType = evt;
+            state.activeSlotTime = null;
+            renderEventTypes();
+            renderCalendar();
+            renderSlots();
+            updateSidebarSummary();
+          };
+
+          card.innerHTML = `
+            <div class="event-card-header">
+              <span class="event-card-title">${escapeHTML(evt.title)}</span>
+              <span class="event-duration-badge">${evt.duration}m</span>
+            </div>
+            <div class="event-card-desc">${escapeHTML(evt.description)}</div>
+          `;
+          container.appendChild(card);
+        });
+
+        updateSidebarSummary();
+      }
+
+      function updateSidebarSummary() {
+        const durText = document.getElementById('sidebar-duration-text');
+        const tzText = document.getElementById('sidebar-timezone-text');
+        if (durText && state.selectedEventType) {
+          durText.textContent = `${state.selectedEventType.duration} min meeting`;
+        }
+        if (tzText) {
+          tzText.textContent = state.userTimezone;
+        }
+      }
+
+      function renderCalendar() {
+        const monthTitle = document.getElementById('calendar-month-display');
+        const grid = document.getElementById('calendar-grid');
+        const btnPrev = document.getElementById('btn-prev-month');
+
+        if (!monthTitle || !grid) return;
+
+        const monthNames = [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        monthTitle.textContent = `${monthNames[state.currentMonth]} ${state.currentYear}`;
+
+        // Disable "previous month" button if current viewed month is in the past
+        const now = new Date();
+        const isCurrentOrPastMonth = state.currentYear < now.getFullYear() || 
+          (state.currentYear === now.getFullYear() && state.currentMonth <= now.getMonth());
+        if (btnPrev) {
+          btnPrev.disabled = isCurrentOrPastMonth;
+        }
+
+        // Build grid
+        grid.innerHTML = '';
+
+        // Weekday labels
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        weekdays.forEach(day => {
+          const lbl = document.createElement('div');
+          lbl.className = 'weekday-header';
+          lbl.textContent = day;
+          lbl.setAttribute('aria-hidden', 'true');
+          grid.appendChild(lbl);
+        });
+
+        // Days calculation
+        const firstDayIndex = new Date(state.currentYear, state.currentMonth, 1).getDay();
+        const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
+
+        // Empty slots for days before the 1st
+        for (let i = 0; i < firstDayIndex; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'day-btn empty';
+          grid.appendChild(empty);
+        }
+
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        // Calendar days
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateObj = new Date(state.currentYear, state.currentMonth, day);
+          const isPast = dateObj < todayStart;
+          const isToday = isSameDate(dateObj, now);
+          const isSelected = isSameDate(dateObj, state.selectedDate);
+          const inHorizon = isDateWithinHorizon(dateObj);
+          const hasSlots = !isPast && inHorizon && dateHasAvailableSlots(dateObj);
+
+          const dayBtn = document.createElement('button');
+          dayBtn.type = 'button';
+          dayBtn.className = 'day-btn';
+          dayBtn.textContent = String(day);
+          dayBtn.setAttribute('aria-label', `${monthNames[state.currentMonth]} ${day}, ${state.currentYear}`);
+
+          if (isToday) dayBtn.classList.add('today');
+          if (isSelected) dayBtn.classList.add('selected');
+          if (hasSlots) dayBtn.classList.add('has-slots');
+
+          if (isPast || !inHorizon || !hasSlots) {
+            dayBtn.disabled = true;
+          } else {
+            dayBtn.onclick = () => {
+              state.selectedDate = dateObj;
+              state.activeSlotTime = null;
+              renderCalendar();
+              renderSlots();
+            };
+          }
+
+          grid.appendChild(dayBtn);
+        }
+      }
+
+      function renderSlots() {
+        const heading = document.getElementById('selected-day-heading');
+        const container = document.getElementById('slots-list-container');
+        if (!container || !heading) return;
+
+        if (!state.selectedDate) {
+          heading.textContent = 'Select a date';
+          container.innerHTML = `
+            <div class="empty-slots">
+              <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <p>Choose an available date from the calendar to view bookable meeting slots.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const options = { weekday: 'long', month: 'short', day: 'numeric' };
+        heading.textContent = state.selectedDate.toLocaleDateString('en-US', options);
+
+        const slots = calculateSlotsForDate(state.selectedDate);
+
+        if (slots.length === 0) {
+          container.innerHTML = `
+            <div class="empty-slots">
+              <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <p>No available slots on this day. Please select another date.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = '';
+        const listWrapper = document.createElement('div');
+        listWrapper.className = 'slots-list';
+
+        slots.forEach(slot => {
+          const row = document.createElement('div');
+          row.className = 'slot-row';
+
+          const isSlotActive = state.activeSlotTime === slot.timeStr;
+
+          const slotBtn = document.createElement('button');
+          slotBtn.type = 'button';
+          slotBtn.className = `slot-btn ${isSlotActive ? 'active' : ''}`;
+          slotBtn.textContent = slot.displayTime;
+          slotBtn.onclick = () => {
+            state.activeSlotTime = slot.timeStr;
+            state.selectedSlot = slot;
+            renderSlots();
+          };
+
+          row.appendChild(slotBtn);
+
+          if (isSlotActive) {
+            const nextBtn = document.createElement('button');
+            nextBtn.type = 'button';
+            nextBtn.className = 'slot-confirm-btn';
+            nextBtn.textContent = 'Next';
+            nextBtn.onclick = () => {
+              goToAttendeeForm(slot);
+            };
+            row.appendChild(nextBtn);
+          }
+
+          listWrapper.appendChild(row);
+        });
+
+        container.appendChild(listWrapper);
+      }
+
+      function populateTimezones() {
+        const select = document.getElementById('user-timezone-select');
+        if (!select) return;
+
+        const commonTimezones = [
+          'UTC',
+          'America/New_York',
+          'America/Chicago',
+          'America/Denver',
+          'America/Los_Angeles',
+          'America/Toronto',
+          'America/Sao_Paulo',
+          'Europe/London',
+          'Europe/Paris',
+          'Europe/Berlin',
+          'Europe/Amsterdam',
+          'Asia/Dubai',
+          'Asia/Kolkata',
+          'Asia/Singapore',
+          'Asia/Tokyo',
+          'Australia/Sydney',
+          'Pacific/Auckland'
+        ];
+
+        if (!commonTimezones.includes(state.userTimezone)) {
+          commonTimezones.unshift(state.userTimezone);
+        }
+
+        select.innerHTML = '';
+        commonTimezones.forEach(tz => {
+          const opt = document.createElement('option');
+          opt.value = tz;
+          opt.textContent = tz.replace('_', ' ');
+          if (tz === state.userTimezone) {
+            opt.selected = true;
+          }
+          select.appendChild(opt);
+        });
+      }
+
+      // ----------------------------------------------------------------------
+      // STEP 3: ATTENDEE FORM & VALIDATION
+      // ----------------------------------------------------------------------
+      function goToAttendeeForm(slot) {
+        state.selectedSlot = slot;
+        state.bookingStep = 2;
+
+        const calFlow = document.getElementById('calendar-flow-view');
+        const formFlow = document.getElementById('attendee-form-view');
+        const confirmFlow = document.getElementById('confirmation-view');
+
+        if (calFlow) calFlow.style.display = 'none';
+        if (confirmFlow) confirmFlow.style.display = 'none';
+        if (formFlow) formFlow.style.display = 'block';
+
+        // Update badge summary
+        const badge = document.getElementById('form-summary-badge');
+        if (badge && state.selectedDate && state.selectedEventType) {
+          const dateStr = state.selectedDate.toLocaleDateString('en-US', {
+            weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'
+          });
+          const locText = getLocationDisplayText(state.settings.meetingLocationType);
+          badge.innerHTML = `
+            <span><strong>${escapeHTML(state.selectedEventType.title)}</strong></span>
+            <span>•</span>
+            <span>${dateStr} at ${slot.displayTime}</span>
+            <span>•</span>
+            <span>${escapeHTML(locText)}</span>
+            <span>•</span>
+            <span>(${state.userTimezone})</span>
+          `;
+        }
+
+        // Clear previous validation errors
+        document.getElementById('attendee-name').classList.remove('invalid');
+        document.getElementById('attendee-email').classList.remove('invalid');
+        document.getElementById('err-attendee-name').classList.remove('visible');
+        document.getElementById('err-attendee-email').classList.remove('visible');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function backToCalendar() {
+        state.bookingStep = 1;
+        document.getElementById('calendar-flow-view').style.display = 'grid';
+        document.getElementById('attendee-form-view').style.display = 'none';
+        document.getElementById('confirmation-view').style.display = 'none';
+        renderCalendar();
+        renderSlots();
+      }
+
+      async function submitBooking(event) {
+        event.preventDefault();
+
+        const nameInput = document.getElementById('attendee-name');
+        const emailInput = document.getElementById('attendee-email');
+        const notesInput = document.getElementById('attendee-notes');
+        const errName = document.getElementById('err-attendee-name');
+        const errEmail = document.getElementById('err-attendee-email');
+        const confirmBtn = document.getElementById('btn-confirm-booking');
+
+        let isValid = true;
+
+        // Name validation
+        const nameVal = nameInput.value.trim();
+        if (nameVal.length < 2) {
+          nameInput.classList.add('invalid');
+          errName.classList.add('visible');
+          isValid = false;
+        } else {
+          nameInput.classList.remove('invalid');
+          errName.classList.remove('visible');
+        }
+
+        // Email validation
+        const emailVal = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailVal)) {
+          emailInput.classList.add('invalid');
+          errEmail.classList.add('visible');
+          isValid = false;
+        } else {
+          emailInput.classList.remove('invalid');
+          errEmail.classList.remove('visible');
+        }
+
+        if (!isValid) return;
+
+        // Double-booking safety check
+        const isDoubleBooked = state.bookings.some(b => {
+          return b.status === 'confirmed' &&
+                 (state.selectedSlot.startMs < b.endMs && state.selectedSlot.endMs > b.startMs);
+        });
+
+        if (isDoubleBooked) {
+          showToast('Sorry, this time slot was just booked! Please select another slot.');
+          backToCalendar();
+          return;
+        }
+
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Scheduling & sending confirmation...';
+        }
+
+        // Build booking object
+        const bookingId = 'bk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        const bookingRecord = {
+          id: bookingId,
+          status: 'confirmed',
+          createdAt: new Date().toISOString(),
+          eventTypeId: state.selectedEventType.id,
+          eventTitle: state.selectedEventType.title,
+          duration: state.selectedEventType.duration,
+          hostName: state.settings.hostName,
+          dateStr: formatDateISO(state.selectedDate),
+          timeStr: state.selectedSlot.timeStr,
+          displayTime: state.selectedSlot.displayTime,
+          startMs: state.selectedSlot.startMs,
+          endMs: state.selectedSlot.endMs,
+          timezone: state.userTimezone,
+          attendeeName: nameVal,
+          attendeeEmail: emailVal,
+          attendeeNotes: notesInput ? notesInput.value.trim() : '',
+          locationType: state.settings.meetingLocationType || 'meet',
+          emailStatus: 'Pending'
+        };
+
+        // Persist to local state & localStorage
+        state.bookings.unshift(bookingRecord);
+        saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+        state.lastConfirmedBooking = bookingRecord;
+
+        updateBadgeCounts();
+
+        // Trigger real EmailJS automated reminder notification if enabled
+        if (state.settings.emailJs && state.settings.emailJs.enabled) {
+          await triggerEmailJsReminder(bookingRecord);
+        } else {
+          bookingRecord.emailStatus = 'Disabled';
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+        }
+
+        // Trigger real-time Google Sheets URL hook sync if enabled
+        if (state.settings.googleSheetsSync && state.settings.googleSheetsSync.enabled && state.settings.googleSheetsSync.webhookUrl) {
+          await triggerGoogleSheetsSync(bookingRecord);
+        } else {
+          bookingRecord.sheetsStatus = 'Idle';
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+        }
+
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirm Booking';
+        }
+
+        // Proceed to confirmation screen
+        showConfirmationScreen(bookingRecord);
+      }
+
+      // ----------------------------------------------------------------------
+      // GOOGLE SHEETS LIVE SYNC & PRE-FORMATTED CSV TEMPLATE
+      // ----------------------------------------------------------------------
+      async function triggerGoogleSheetsSync(booking) {
+        const config = state.settings.googleSheetsSync;
+        if (!config || !config.enabled || !config.webhookUrl) {
+          booking.sheetsStatus = 'Not configured';
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+          return false;
+        }
+
+        const locationText = getLocationDisplayText(booking.locationType);
+        const payload = {
+          bookingId: booking.id,
+          status: booking.status,
+          eventTitle: booking.eventTitle,
+          duration: booking.duration,
+          date: booking.dateStr,
+          time: booking.timeStr,
+          displayTime: booking.displayTime,
+          timezone: booking.timezone,
+          hostName: booking.hostName,
+          attendeeName: booking.attendeeName,
+          attendeeEmail: booking.attendeeEmail,
+          location: locationText,
+          notes: booking.attendeeNotes || 'None',
+          createdAt: booking.createdAt,
+          csvRow: [
+            booking.id,
+            booking.status,
+            booking.eventTitle,
+            booking.duration + ' mins',
+            booking.dateStr,
+            booking.displayTime,
+            booking.timezone,
+            booking.hostName,
+            booking.attendeeName,
+            booking.attendeeEmail,
+            locationText,
+            booking.attendeeNotes || 'None',
+            booking.createdAt
+          ]
+        };
+
+        try {
+          await fetch(config.webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'text/plain'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          booking.sheetsStatus = 'Synced';
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+          return true;
+        } catch (err) {
+          console.error('Google Sheets hook sync error:', err);
+          booking.sheetsStatus = 'Failed: ' + (err.message || 'Error');
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+          return false;
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // EMAILJS AUTOMATED REMINDER NOTIFICATIONS
+      // ----------------------------------------------------------------------
+      async function triggerEmailJsReminder(booking) {
+        const config = state.settings.emailJs;
+        if (!config || !config.enabled) return;
+
+        if (!config.serviceId || !config.templateId || !config.publicKey) {
+          booking.emailStatus = 'Config incomplete';
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+          console.warn('EmailJS enabled but credentials (Service, Template, or Public Key) missing.');
+          return;
+        }
+
+        try {
+          if (window.emailjs) {
+            window.emailjs.init(config.publicKey);
+
+            const locationText = getLocationDisplayText(booking.locationType);
+            const gcalLink = buildGoogleCalendarLink(booking);
+
+            const templateParams = {
+              to_name: booking.attendeeName,
+              to_email: booking.attendeeEmail,
+              event_title: booking.eventTitle,
+              event_date: `${booking.dateStr} (${booking.timezone})`,
+              event_time: booking.displayTime,
+              event_duration: `${booking.duration} minutes`,
+              host_name: state.settings.hostName,
+              host_email: config.hostEmail || '',
+              meeting_location: locationText,
+              attendee_notes: booking.attendeeNotes || 'None',
+              gcal_link: gcalLink,
+              reply_to: config.hostEmail || booking.attendeeEmail
+            };
+
+            await window.emailjs.send(config.serviceId, config.templateId, templateParams);
+            booking.emailStatus = 'Sent';
+            saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+            showToast(`Automated reminder email sent to ${booking.attendeeEmail}`);
+          } else {
+            booking.emailStatus = 'SDK offline';
+            saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+          }
+        } catch (err) {
+          console.error('EmailJS notification failed:', err);
+          booking.emailStatus = 'Failed: ' + (err.text || err.message || 'Error');
+          saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // STEP 4: CONFIRMATION & CALENDAR EXPORT (.ICS & GOOGLE CALENDAR)
+      // ----------------------------------------------------------------------
+      function buildGoogleCalendarLink(booking) {
+        const startISO = formatGCalDate(booking.startMs);
+        const endISO = formatGCalDate(booking.endMs);
+        const title = encodeURIComponent(`${booking.eventTitle} with ${booking.hostName}`);
+        const location = encodeURIComponent(getLocationDisplayText(booking.locationType));
+        const details = encodeURIComponent(
+          `Meeting scheduled via Scheduly (Flynn J.P).\n\nAttendee: ${booking.attendeeName} (${booking.attendeeEmail})\nLocation: ${getLocationDisplayText(booking.locationType)}\nNotes: ${booking.attendeeNotes || 'None'}`
+        );
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startISO}/${endISO}&details=${details}&location=${location}`;
+      }
+
+      function showConfirmationScreen(booking) {
+        state.bookingStep = 3;
+
+        document.getElementById('calendar-flow-view').style.display = 'none';
+        document.getElementById('attendee-form-view').style.display = 'none';
+        const confirmView = document.getElementById('confirmation-view');
+        confirmView.style.display = 'flex';
+
+        const content = document.getElementById('confirmation-card-content');
+        const startDate = new Date(booking.startMs);
+        const formattedDate = startDate.toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+        });
+
+        const locationText = getLocationDisplayText(booking.locationType);
+        const isEmailSent = booking.emailStatus === 'Sent';
+
+        content.innerHTML = `
+          ${state.settings.logoUrl ? `
+            <div style="text-align: center; margin-bottom: 12px;">
+              <img src="${state.settings.logoUrl}" alt="Brand Logo" style="max-height: 48px; max-width: 140px; object-fit: contain;" />
+            </div>
+          ` : ''}
+
+          <div class="summary-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div>
+              <strong>${escapeHTML(booking.eventTitle)}</strong> (${booking.duration} mins)<br>
+              <span>with ${escapeHTML(booking.hostName)}</span>
+            </div>
+          </div>
+
+          <div class="summary-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div>
+              <strong>${formattedDate}</strong><br>
+              <span>${booking.displayTime} (${booking.timezone})</span>
+            </div>
+          </div>
+
+          <div class="summary-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <div>
+              <strong>Meeting Location:</strong><br>
+              <span>${escapeHTML(locationText)}</span>
+            </div>
+          </div>
+
+          <div class="summary-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div>
+              <strong>${escapeHTML(booking.attendeeName)}</strong><br>
+              <span>${escapeHTML(booking.attendeeEmail)}</span>
+            </div>
+          </div>
+
+          ${booking.attendeeNotes ? `
+          <div class="summary-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div>
+              <strong>Notes:</strong><br>
+              <span>${escapeHTML(booking.attendeeNotes)}</span>
+            </div>
+          </div>` : ''}
+
+          <div class="summary-row" style="background: var(--color-surface-hover); padding: 10px; border-radius: var(--radius-md);">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <div>
+              <strong>Email Confirmation & Reminders:</strong><br>
+              ${isEmailSent ? `
+                <span style="color: var(--color-success); font-weight: 600;">✓ Automated confirmation email sent via EmailJS to ${escapeHTML(booking.attendeeEmail)}</span>
+              ` : `
+                <span style="color: var(--color-text-muted);">Calendar invites ready below. EmailJS reminders can be enabled in Host Settings.</span>
+              `}
+            </div>
+          </div>
+        `;
+
+        // Configure Google Calendar Link
+        const gcalBtn = document.getElementById('btn-google-calendar-link');
+        if (gcalBtn) {
+          gcalBtn.href = buildGoogleCalendarLink(booking);
+        }
+
+        showToast('Meeting successfully booked!');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function formatGCalDate(ms) {
+        const d = new Date(ms);
+        return d.toISOString().replace(/-|:|\.\d+/g, '');
+      }
+
+      function downloadICS() {
+        const booking = state.lastConfirmedBooking;
+        if (!booking) {
+          showToast('No booking found to export.');
+          return;
+        }
+
+        const startISO = formatGCalDate(booking.startMs);
+        const endISO = formatGCalDate(booking.endMs);
+        const nowISO = formatGCalDate(Date.now());
+        const summary = `${booking.eventTitle} with ${booking.hostName}`;
+        const location = getLocationDisplayText(booking.locationType);
+        const description = `Meeting with ${booking.attendeeName} (${booking.attendeeEmail}). Location: ${location}. Notes: ${booking.attendeeNotes || 'None'}`;
+
+        const icsContent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Scheduly//Calendar Booking Tool Flynn J.P//EN',
+          'CALSCALE:GREGORIAN',
+          'METHOD:REQUEST',
+          'BEGIN:VEVENT',
+          `UID:${booking.id}@scheduly.local`,
+          `DTSTAMP:${nowISO}`,
+          `DTSTART:${startISO}`,
+          `DTEND:${endISO}`,
+          `SUMMARY:${summary}`,
+          `LOCATION:${location.replace(/,/g, '\\,')}`,
+          `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
+          'STATUS:CONFIRMED',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', `scheduly-${booking.id}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Downloaded .ics calendar file');
+      }
+
+      function resetBookingFlow() {
+        state.bookingStep = 1;
+        state.activeSlotTime = null;
+        document.getElementById('booking-submission-form').reset();
+        document.getElementById('calendar-flow-view').style.display = 'grid';
+        document.getElementById('attendee-form-view').style.display = 'none';
+        document.getElementById('confirmation-view').style.display = 'none';
+        renderCalendar();
+        renderSlots();
+      }
+
+      // ----------------------------------------------------------------------
+      // VIEW 2: HOST DASHBOARD & SETTINGS
+      // ----------------------------------------------------------------------
+      function renderHostDashboard() {
+        renderHostInfo();
+        renderWeeklyScheduleSettings();
+        renderBookingsTable();
+
+        // Update settings controls
+        const bufferSelect = document.getElementById('setting-buffer-minutes');
+        if (bufferSelect) bufferSelect.value = String(state.settings.bufferMinutes);
+
+        const noticeSelect = document.getElementById('setting-notice-hours');
+        if (noticeSelect) noticeSelect.value = String(state.settings.minimumNoticeHours);
+
+        const horizonSelect = document.getElementById('setting-max-days');
+        const customContainer = document.getElementById('custom-horizon-inputs');
+        const startDateInput = document.getElementById('setting-horizon-start');
+        const endDateInput = document.getElementById('setting-horizon-end');
+
+        if (state.settings.bookingHorizonType === 'custom') {
+          if (horizonSelect) horizonSelect.value = 'custom';
+          if (customContainer) customContainer.style.display = 'grid';
+          if (startDateInput) startDateInput.value = state.settings.horizonStartDate || '';
+          if (endDateInput) endDateInput.value = state.settings.horizonEndDate || '';
+        } else {
+          if (horizonSelect) horizonSelect.value = String(state.settings.bookingHorizonDays || 60);
+          if (customContainer) customContainer.style.display = 'none';
+        }
+
+        // EmailJS settings
+        const emailJsEnabled = document.getElementById('setting-emailjs-enabled');
+        const emailJsService = document.getElementById('setting-emailjs-service');
+        const emailJsTemplate = document.getElementById('setting-emailjs-template');
+        const emailJsPublicKey = document.getElementById('setting-emailjs-publickey');
+        const emailJsHostEmail = document.getElementById('setting-emailjs-hostemail');
+
+        if (emailJsEnabled) emailJsEnabled.checked = Boolean(state.settings.emailJs?.enabled);
+        if (emailJsService) emailJsService.value = state.settings.emailJs?.serviceId || '';
+        if (emailJsTemplate) emailJsTemplate.value = state.settings.emailJs?.templateId || '';
+        if (emailJsPublicKey) emailJsPublicKey.value = state.settings.emailJs?.publicKey || '';
+        if (emailJsHostEmail) emailJsHostEmail.value = state.settings.emailJs?.hostEmail || '';
+
+        // Google Sheets Sync settings
+        const sheetsEnabled = document.getElementById('setting-sheets-enabled');
+        const sheetsWebhook = document.getElementById('setting-sheets-webhook');
+        if (sheetsEnabled) sheetsEnabled.checked = Boolean(state.settings.googleSheetsSync?.enabled);
+        if (sheetsWebhook) sheetsWebhook.value = state.settings.googleSheetsSync?.webhookUrl || '';
+      }
+
+      function renderWeeklyScheduleSettings() {
+        const container = document.getElementById('weekly-hours-list');
+        if (!container) return;
+
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const order = [1, 2, 3, 4, 5, 6, 0]; // Mon to Sun
+
+        container.innerHTML = '';
+        order.forEach(dayIndex => {
+          const dayData = state.settings.weeklySchedule[dayIndex] || { enabled: false, start: '09:00', end: '17:00' };
+
+          const row = document.createElement('div');
+          row.className = 'day-schedule-row';
+
+          row.innerHTML = `
+            <label class="day-toggle-label">
+              <input type="checkbox" ${dayData.enabled ? 'checked' : ''} onchange="app.toggleDaySchedule(${dayIndex}, this.checked)" />
+              <span>${dayNames[dayIndex]}</span>
+            </label>
+            <input type="time" class="time-input" value="${dayData.start}" ${!dayData.enabled ? 'disabled' : ''} onchange="app.updateDayTime(${dayIndex}, 'start', this.value)" />
+            <input type="time" class="time-input" value="${dayData.end}" ${!dayData.enabled ? 'disabled' : ''} onchange="app.updateDayTime(${dayIndex}, 'end', this.value)" />
+          `;
+
+          container.appendChild(row);
+        });
+      }
+
+      function renderBookingsTable() {
+        const tbody = document.getElementById('bookings-table-body');
+        const countLabel = document.getElementById('bookings-count-label');
+        if (!tbody) return;
+
+        let filtered = state.bookings;
+
+        // Filter by Status
+        if (state.bookingsFilterStatus !== 'all') {
+          filtered = filtered.filter(b => b.status === state.bookingsFilterStatus);
+        }
+
+        // Filter by Search Query
+        if (state.bookingsSearchQuery) {
+          const q = state.bookingsSearchQuery.toLowerCase();
+          filtered = filtered.filter(b => 
+            (b.attendeeName && b.attendeeName.toLowerCase().includes(q)) ||
+            (b.attendeeEmail && b.attendeeEmail.toLowerCase().includes(q)) ||
+            (b.eventTitle && b.eventTitle.toLowerCase().includes(q)) ||
+            (b.attendeeNotes && b.attendeeNotes.toLowerCase().includes(q))
+          );
+        }
+
+        if (countLabel) {
+          const confirmedCount = state.bookings.filter(b => b.status === 'confirmed').length;
+          countLabel.textContent = `${confirmedCount} upcoming / ${state.bookings.length} total (${filtered.length} shown)`;
+        }
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" style="text-align: center; color: var(--color-text-muted); padding: 32px;">
+                ${state.bookings.length === 0 ? 'No bookings recorded yet. Visitors will appear here once scheduled.' : 'No bookings match your search filters.'}
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        filtered.forEach(b => {
+          const tr = document.createElement('tr');
+          const isConfirmed = b.status === 'confirmed';
+          const startDate = new Date(b.startMs);
+          const dateFmt = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+          let emailBadge = `<span class="email-status-badge none">Off</span>`;
+          if (b.emailStatus === 'Sent') {
+            emailBadge = `<span class="email-status-badge sent">✉️ Sent</span>`;
+          } else if (b.emailStatus && b.emailStatus.startsWith('Failed')) {
+            emailBadge = `<span class="email-status-badge failed" title="${escapeHTML(b.emailStatus)}">⚠️ Error</span>`;
+          }
+
+          let sheetsBadge = `<span class="sheets-sync-pill sheets-sync-idle">Idle</span>`;
+          if (b.sheetsStatus === 'Synced') {
+            sheetsBadge = `<span class="sheets-sync-pill sheets-sync-active" title="Synced to Google Sheets">Synced 📊</span>`;
+          } else if (b.sheetsStatus && b.sheetsStatus.startsWith('Failed')) {
+            sheetsBadge = `<span class="sheets-sync-pill" style="background:#fee2e2; color:#b91c1c;" title="${escapeHTML(b.sheetsStatus)}">⚠️ Error</span>`;
+          } else if (state.settings.googleSheetsSync?.enabled && state.settings.googleSheetsSync?.webhookUrl) {
+            sheetsBadge = `<button type="button" class="btn-secondary" style="padding: 2px 7px; font-size: 0.725rem;" onclick="app.syncBookingToSheets('${b.id}')">Sync Now</button>`;
+          }
+
+          tr.innerHTML = `
+            <td>
+              <span class="status-pill ${isConfirmed ? 'status-confirmed' : 'status-cancelled'}">
+                ${isConfirmed ? 'Confirmed' : 'Cancelled'}
+              </span>
+            </td>
+            <td><strong>${escapeHTML(b.eventTitle)}</strong> (${b.duration}m)</td>
+            <td>${dateFmt} at ${b.displayTime}</td>
+            <td>${escapeHTML(b.attendeeName)}</td>
+            <td><a href="mailto:${escapeHTML(b.attendeeEmail)}" style="color: var(--color-primary);">${escapeHTML(b.attendeeEmail)}</a></td>
+            <td>${emailBadge}</td>
+            <td>${sheetsBadge}</td>
+            <td><span style="font-size: 0.8rem; color: var(--color-text-muted);">${b.attendeeNotes ? escapeHTML(b.attendeeNotes) : '—'}</span></td>
+            <td>
+              ${isConfirmed ? `
+                <button type="button" class="btn-cancel-booking" onclick="app.cancelBooking('${b.id}')">
+                  Cancel
+                </button>
+              ` : '—'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function updateBadgeCounts() {
+        const badge = document.getElementById('confirmed-badge-count');
+        if (badge) {
+          const count = state.bookings.filter(b => b.status === 'confirmed').length;
+          badge.textContent = String(count);
+        }
+      }
+
+      function escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // ----------------------------------------------------------------------
+      // PUBLIC APP INTERFACE (Bound to window.app)
+      // ----------------------------------------------------------------------
+      window.app = {
+        // Theme Toggle
+        toggleTheme: function () {
+          const next = state.theme === 'dark' ? 'light' : 'dark';
+          applyTheme(next);
+        },
+
+        // View Navigation & Host Privacy Gate
+        switchView: function (viewName) {
+          if (viewName === 'host' && !state.isHostAuthenticated) {
+            this.promptHostLogin();
+            return;
+          }
+
+          state.currentView = viewName;
+          const pubTab = document.getElementById('tab-public-view');
+          const hostTab = document.getElementById('tab-host-view');
+          const pubContainer = document.getElementById('public-booking-container');
+          const hostContainer = document.getElementById('host-dashboard-container');
+
+          if (viewName === 'public') {
+            if (pubTab) pubTab.classList.add('active');
+            if (hostTab) hostTab.classList.remove('active');
+            if (pubContainer) pubContainer.style.display = 'block';
+            if (hostContainer) hostContainer.style.display = 'none';
+            renderCalendar();
+            renderSlots();
+          } else {
+            if (hostTab) hostTab.classList.add('active');
+            if (pubTab) pubTab.classList.remove('active');
+            if (pubContainer) pubContainer.style.display = 'none';
+            if (hostContainer) hostContainer.style.display = 'block';
+            renderHostDashboard();
+          }
+        },
+
+        // Host Authentication Flow & Privacy Gateway
+        promptHostLogin: function () {
+          if (state.isHostAuthenticated) {
+            // If already authenticated, toggle to host view
+            this.switchView(state.currentView === 'host' ? 'public' : 'host');
+            return;
+          }
+          const modal = document.getElementById('host-pin-modal');
+          const input = document.getElementById('host-pin-input');
+          const err = document.getElementById('err-host-pin');
+          if (err) err.classList.remove('visible');
+          if (input) {
+            input.value = '';
+            input.type = 'password';
+            input.classList.remove('invalid');
+          }
+          const btn = document.getElementById('btn-toggle-pin-visibility');
+          if (btn) btn.textContent = '👁️';
+          if (modal) modal.classList.add('visible');
+          setTimeout(() => input && input.focus(), 150);
+        },
+
+        submitHostPin: function (event) {
+          if (event) event.preventDefault();
+          const input = document.getElementById('host-pin-input');
+          const err = document.getElementById('err-host-pin');
+          const rememberCheckbox = document.getElementById('remember-host-checkbox');
+          const entered = input ? input.value.trim() : '';
+          const requiredPin = state.settings.hostPin || '1234';
+
+          if (entered === requiredPin) {
+            state.isHostAuthenticated = true;
+            if (rememberCheckbox && rememberCheckbox.checked) {
+              localStorage.setItem('scheduly_host_auth_session', 'true');
+            } else {
+              localStorage.removeItem('scheduly_host_auth_session');
+            }
+            this.closeHostPinModal();
+            syncHostAuthState();
+            this.switchView('host');
+            showToast('Welcome back, Flynn J.P! Host Mode active.');
+          } else {
+            if (err) err.classList.add('visible');
+            if (input) {
+              input.classList.add('invalid');
+              input.focus();
+            }
+          }
+        },
+
+        togglePinVisibility: function () {
+          const input = document.getElementById('host-pin-input');
+          const btn = document.getElementById('btn-toggle-pin-visibility');
+          if (!input) return;
+          if (input.type === 'password') {
+            input.type = 'text';
+            if (btn) btn.textContent = '🙈';
+          } else {
+            input.type = 'password';
+            if (btn) btn.textContent = '👁️';
+          }
+        },
+
+        toggleSettingPinVisibility: function () {
+          const input = document.getElementById('setting-host-pin');
+          if (!input) return;
+          input.type = input.type === 'password' ? 'text' : 'password';
+        },
+
+        closeHostPinModal: function () {
+          const modal = document.getElementById('host-pin-modal');
+          if (modal) modal.classList.remove('visible');
+          // If URL had #admin or #host, clear it so visitor isn't prompted again
+          if (window.location.hash === '#admin' || window.location.hash === '#host') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        },
+
+        lockHostMode: function () {
+          state.isHostAuthenticated = false;
+          localStorage.removeItem('scheduly_host_auth_session');
+          if (window.location.hash === '#admin' || window.location.hash === '#host') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+          syncHostAuthState();
+          this.switchView('public');
+          showToast('Host mode locked. Client view active.');
+        },
+
+        // Logo Upload & Management
+        handleLogoUpload: function (file) {
+          if (!file) return;
+
+          if (!file.type.startsWith('image/')) {
+            showToast('Please select a valid image file (PNG, JPG, SVG, WebP).');
+            return;
+          }
+
+          if (file.size > 2.5 * 1024 * 1024) {
+            showToast('Logo image must be smaller than 2.5MB.');
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            state.settings.logoUrl = dataUrl;
+            saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+            renderLogo();
+            renderHostInfo();
+            showToast('Logo uploaded and saved successfully!');
+          };
+          reader.onerror = () => {
+            showToast('Failed to read logo image.');
+          };
+          reader.readAsDataURL(file);
+        },
+
+        removeLogo: function () {
+          state.settings.logoUrl = null;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderLogo();
+          renderHostInfo();
+          showToast('Custom logo removed. Default branding active.');
+        },
+
+        // Booking Horizon Settings (with Custom Date Range Option)
+        updateHorizonSelection: function (val) {
+          const customInputs = document.getElementById('custom-horizon-inputs');
+          if (val === 'custom') {
+            state.settings.bookingHorizonType = 'custom';
+            if (customInputs) customInputs.style.display = 'grid';
+            
+            // Set defaults if empty
+            if (!state.settings.horizonStartDate) {
+              state.settings.horizonStartDate = formatDateISO(new Date());
+              const startInput = document.getElementById('setting-horizon-start');
+              if (startInput) startInput.value = state.settings.horizonStartDate;
+            }
+            if (!state.settings.horizonEndDate) {
+              const thirtyDaysOut = new Date(Date.now() + 30 * 86400 * 1000);
+              state.settings.horizonEndDate = formatDateISO(thirtyDaysOut);
+              const endInput = document.getElementById('setting-horizon-end');
+              if (endInput) endInput.value = state.settings.horizonEndDate;
+            }
+          } else {
+            state.settings.bookingHorizonType = 'days';
+            state.settings.bookingHorizonDays = parseInt(val, 10) || 60;
+            if (customInputs) customInputs.style.display = 'none';
+          }
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderCalendar();
+          showToast('Booking horizon updated');
+        },
+
+        updateCustomHorizon: function (field, value) {
+          if (field === 'start') {
+            state.settings.horizonStartDate = value;
+          } else if (field === 'end') {
+            state.settings.horizonEndDate = value;
+          }
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderCalendar();
+          showToast('Custom date horizon updated');
+        },
+
+        // EmailJS Settings & Live Testing
+        updateEmailJsField: function (field, val) {
+          if (!state.settings.emailJs) {
+            state.settings.emailJs = {};
+          }
+          state.settings.emailJs[field] = val;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          showToast(`EmailJS ${field} saved`);
+        },
+
+        sendTestEmailJs: async function () {
+          const config = state.settings.emailJs;
+          const statusEl = document.getElementById('emailjs-test-status');
+          const btn = document.getElementById('btn-test-emailjs');
+
+          if (!config || !config.serviceId || !config.templateId || !config.publicKey) {
+            if (statusEl) {
+              statusEl.textContent = 'Please fill Service ID, Template ID, and Public Key.';
+              statusEl.style.color = 'var(--color-danger)';
+            }
+            showToast('EmailJS configuration incomplete');
+            return;
+          }
+
+          const targetEmail = config.hostEmail || 'test@scheduly.app';
+
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+          }
+          if (statusEl) {
+            statusEl.textContent = 'Contacting EmailJS server...';
+            statusEl.style.color = 'var(--color-text-muted)';
+          }
+
+          try {
+            if (!window.emailjs) {
+              throw new Error('EmailJS SDK not loaded in browser.');
+            }
+
+            window.emailjs.init(config.publicKey);
+            const testParams = {
+              to_name: 'Host Flynn J.P',
+              to_email: targetEmail,
+              event_title: '30 Min Consultation (Test Reminder)',
+              event_date: `${formatDateISO(new Date())} (${state.userTimezone})`,
+              event_time: '10:00 AM',
+              event_duration: '30 minutes',
+              host_name: state.settings.hostName,
+              meeting_location: getLocationDisplayText(state.settings.meetingLocationType),
+              attendee_notes: 'This is a live diagnostic verification test triggered from Scheduly.',
+              gcal_link: 'https://calendar.google.com'
+            };
+
+            await window.emailjs.send(config.serviceId, config.templateId, testParams);
+            if (statusEl) {
+              statusEl.textContent = `✓ Test email sent successfully to ${targetEmail}!`;
+              statusEl.style.color = 'var(--color-success)';
+            }
+            showToast('EmailJS test email sent successfully!');
+          } catch (err) {
+            console.error('Test email failed:', err);
+            if (statusEl) {
+              statusEl.textContent = '✕ Error: ' + (err.text || err.message || 'Verification failed');
+              statusEl.style.color = 'var(--color-danger)';
+            }
+            showToast('EmailJS test failed. Check Service/Template IDs');
+          } finally {
+            if (btn) {
+              btn.disabled = false;
+              btn.textContent = 'Send Test Email';
+            }
+          }
+        },
+
+        // Google Sheets Integration & Webhook Sync
+        updateGoogleSheetsField: function (field, val) {
+          if (!state.settings.googleSheetsSync) {
+            state.settings.googleSheetsSync = { enabled: false, webhookUrl: '', autoSync: true };
+          }
+          state.settings.googleSheetsSync[field] = val;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderBookingsTable();
+          showToast(`Google Sheets ${field} setting saved`);
+        },
+
+        testGoogleSheetsSync: async function () {
+          const config = state.settings.googleSheetsSync;
+          const statusEl = document.getElementById('sheets-test-status');
+          const btn = document.getElementById('btn-test-sheets');
+
+          if (!config || !config.webhookUrl) {
+            if (statusEl) {
+              statusEl.textContent = 'Please enter your Google Apps Script Webhook URL first.';
+              statusEl.style.color = 'var(--color-danger)';
+            }
+            showToast('Google Sheets Webhook URL is missing');
+            return;
+          }
+
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Testing Hook...';
+          }
+          if (statusEl) {
+            statusEl.textContent = 'Sending test payload to Google Sheets...';
+            statusEl.style.color = 'var(--color-text-muted)';
+          }
+
+          const testPayload = {
+            type: 'TEST_CONNECTION',
+            bookingId: 'TEST-SHEETS-' + Date.now(),
+            status: 'confirmed',
+            eventTitle: '30 Min Consultation (Diagnostic Test)',
+            duration: 30,
+            date: formatDateISO(new Date()),
+            time: '11:00 AM',
+            displayTime: '11:00 am',
+            timezone: state.userTimezone,
+            hostName: state.settings.hostName || 'Flynn J.P',
+            attendeeName: 'Test Attendee',
+            attendeeEmail: 'test@example.com',
+            location: 'Google Meet',
+            notes: 'Testing Google Sheets Webhook integration from Scheduly',
+            createdAt: new Date().toISOString(),
+            csvRow: [
+              'TEST-SHEETS-' + Date.now(),
+              'confirmed',
+              '30 Min Consultation (Diagnostic Test)',
+              '30 mins',
+              formatDateISO(new Date()),
+              '11:00 am',
+              state.userTimezone,
+              state.settings.hostName || 'Flynn J.P',
+              'Test Attendee',
+              'test@example.com',
+              'Google Meet',
+              'Testing Google Sheets Webhook integration from Scheduly',
+              new Date().toISOString()
+            ]
+          };
+
+          try {
+            await fetch(config.webhookUrl, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify(testPayload)
+            });
+
+            if (statusEl) {
+              statusEl.textContent = '✓ Webhook triggered successfully! Check your Google Sheet rows.';
+              statusEl.style.color = 'var(--color-success)';
+            }
+            showToast('Test signal sent to Google Sheets Webhook!');
+          } catch (err) {
+            console.error('Sheets webhook test failed:', err);
+            if (statusEl) {
+              statusEl.textContent = '✕ Error: ' + (err.message || 'Failed to dispatch webhook');
+              statusEl.style.color = 'var(--color-danger)';
+            }
+            showToast('Failed to trigger Google Sheets webhook');
+          } finally {
+            if (btn) {
+              btn.disabled = false;
+              btn.textContent = 'Test Sheets Webhook';
+            }
+          }
+        },
+
+        downloadGoogleSheetsCsvTemplate: function () {
+          const headers = [
+            'Booking ID',
+            'Status',
+            'Event Type',
+            'Duration',
+            'Date',
+            'Time',
+            'Timezone',
+            'Host Name',
+            'Attendee Name',
+            'Attendee Email',
+            'Location',
+            'Notes',
+            'Created At'
+          ];
+
+          const sampleRow = [
+            'SAMPLE-001',
+            'confirmed',
+            '30 Min Consultation',
+            '30 mins',
+            formatDateISO(new Date()),
+            '10:00 am',
+            state.userTimezone,
+            state.settings.hostName || 'Flynn J.P',
+            'Jane Smith (Sample)',
+            'jane.smith@example.com',
+            'Google Meet (Web conference)',
+            'Strategic review & next quarter alignment',
+            new Date().toISOString()
+          ];
+
+          const escapeCell = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+
+          let rowsData;
+          if (state.bookings && state.bookings.length > 0) {
+            rowsData = state.bookings.map(b => [
+              b.id,
+              b.status,
+              b.eventTitle,
+              b.duration + ' mins',
+              b.dateStr,
+              b.displayTime,
+              b.timezone,
+              b.hostName,
+              b.attendeeName,
+              b.attendeeEmail,
+              getLocationDisplayText(b.locationType),
+              b.attendeeNotes || '',
+              b.createdAt
+            ]);
+          } else {
+            rowsData = [sampleRow];
+          }
+
+          const csvLines = [
+            headers.map(escapeCell).join(','),
+            ...rowsData.map(r => r.map(escapeCell).join(','))
+          ];
+
+          const csvBlob = new Blob([csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+          const dlLink = document.createElement('a');
+          dlLink.href = URL.createObjectURL(csvBlob);
+          dlLink.setAttribute('download', `scheduly_google_sheets_${Date.now()}.csv`);
+          document.body.appendChild(dlLink);
+          dlLink.click();
+          document.body.removeChild(dlLink);
+          showToast('Google Sheets pre-formatted CSV template downloaded!');
+        },
+
+        toggleSheetsScriptGuide: function () {
+          const guide = document.getElementById('sheets-script-guide');
+          if (!guide) return;
+          const isHidden = guide.style.display === 'none' || !guide.style.display;
+          guide.style.display = isHidden ? 'block' : 'none';
+        },
+
+        copyGoogleAppsScriptCode: function () {
+          const codeEl = document.getElementById('sheets-app-script-code');
+          if (!codeEl) return;
+          const code = codeEl.innerText || codeEl.textContent;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(() => {
+              showToast('Google Apps Script code copied to clipboard!');
+            }).catch(() => {
+              showToast('Select code manually to copy.');
+            });
+          } else {
+            showToast('Select code manually to copy.');
+          }
+        },
+
+        syncBookingToSheets: async function (bookingId) {
+          const booking = state.bookings.find(b => b.id === bookingId);
+          if (!booking) return;
+
+          if (!state.settings.googleSheetsSync?.webhookUrl) {
+            showToast('Please set your Google Sheets Webhook URL first.');
+            return;
+          }
+
+          showToast(`Syncing booking for ${booking.attendeeName}...`);
+          const success = await triggerGoogleSheetsSync(booking);
+          renderBookingsTable();
+          if (success) {
+            showToast('Synced to Google Sheets successfully!');
+          }
+        },
+
+        syncAllPendingToSheets: async function () {
+          const config = state.settings.googleSheetsSync;
+          if (!config || !config.webhookUrl) {
+            showToast('Please enter your Google Sheets Webhook URL in settings above.');
+            return;
+          }
+
+          const pending = state.bookings.filter(b => b.sheetsStatus !== 'Synced');
+          if (pending.length === 0) {
+            showToast('All bookings are already synced to Google Sheets!');
+            return;
+          }
+
+          showToast(`Syncing ${pending.length} booking(s) to Google Sheets...`);
+          let syncedCount = 0;
+          for (const b of pending) {
+            const ok = await triggerGoogleSheetsSync(b);
+            if (ok) syncedCount++;
+          }
+          renderBookingsTable();
+          showToast(`Completed! ${syncedCount} of ${pending.length} bookings synced.`);
+        },
+
+        // Calendar Navigation & Timezone
+        prevMonth: function () {
+          state.currentMonth--;
+          if (state.currentMonth < 0) {
+            state.currentMonth = 11;
+            state.currentYear--;
+          }
+          renderCalendar();
+          renderSlots();
+        },
+
+        nextMonth: function () {
+          state.currentMonth++;
+          if (state.currentMonth > 11) {
+            state.currentMonth = 0;
+            state.currentYear++;
+          }
+          renderCalendar();
+          renderSlots();
+        },
+
+        changeTimezone: function (newTz) {
+          state.userTimezone = newTz;
+          updateSidebarSummary();
+          renderSlots();
+          showToast(`Timezone changed to ${newTz}`);
+        },
+
+        // Booking Form Actions
+        backToCalendar: backToCalendar,
+        submitBooking: submitBooking,
+        downloadICS: downloadICS,
+        resetBookingFlow: resetBookingFlow,
+
+        // Host Availability Rules
+        toggleDaySchedule: function (dayIndex, enabled) {
+          state.settings.weeklySchedule[dayIndex].enabled = enabled;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderWeeklyScheduleSettings();
+          renderCalendar();
+          showToast('Updated schedule');
+        },
+
+        updateDayTime: function (dayIndex, field, value) {
+          state.settings.weeklySchedule[dayIndex][field] = value;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderCalendar();
+          showToast('Updated working hours');
+        },
+
+        updateSettings: function (key, value) {
+          state.settings[key] = value;
+          saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+          renderHostInfo();
+          showToast('Settings saved');
+        },
+
+        // Bookings Search & Filtering
+        filterBookings: function (query) {
+          state.bookingsSearchQuery = (query || '').trim();
+          renderBookingsTable();
+        },
+
+        setBookingFilter: function (status) {
+          state.bookingsFilterStatus = status;
+          ['all', 'confirmed', 'cancelled'].forEach(s => {
+            const pill = document.getElementById(`filter-pill-${s}`);
+            if (pill) {
+              if (s === status) pill.classList.add('active');
+              else pill.classList.remove('active');
+            }
+          });
+          renderBookingsTable();
+        },
+
+        cancelBooking: function (bookingId) {
+          const booking = state.bookings.find(b => b.id === bookingId);
+          if (!booking) return;
+
+          if (confirm(`Cancel meeting with ${booking.attendeeName}? This slot will become bookable again.`)) {
+            booking.status = 'cancelled';
+            saveStorage(STORAGE_KEYS.BOOKINGS, state.bookings);
+            updateBadgeCounts();
+            renderBookingsTable();
+            showToast('Booking cancelled and slot reopened');
+          }
+        },
+
+        // Export Actions (CSV & JSON)
+        exportBookingsCSV: function () {
+          if (state.bookings.length === 0) {
+            showToast('No bookings to export.');
+            return;
+          }
+
+          const headers = [
+            'Booking ID', 'Status', 'Event Title', 'Duration (min)', 'Date', 'Time',
+            'Timezone', 'Host Name', 'Attendee Name', 'Attendee Email', 'Location',
+            'Email Reminder', 'Notes', 'Created At'
+          ];
+
+          const rows = state.bookings.map(b => [
+            b.id,
+            b.status,
+            `"${(b.eventTitle || '').replace(/"/g, '""')}"`,
+            b.duration,
+            b.dateStr,
+            b.timeStr,
+            b.timezone,
+            `"${(b.hostName || '').replace(/"/g, '""')}"`,
+            `"${(b.attendeeName || '').replace(/"/g, '""')}"`,
+            `"${(b.attendeeEmail || '').replace(/"/g, '""')}"`,
+            `"${getLocationDisplayText(b.locationType).replace(/"/g, '""')}"`,
+            b.emailStatus || 'Disabled',
+            `"${(b.attendeeNotes || '').replace(/"/g, '""')}"`,
+            b.createdAt
+          ]);
+
+          const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute('download', `scheduly-bookings-${Date.now()}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast('Exported bookings to CSV');
+        },
+
+        exportBookingsJSON: function () {
+          const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state.bookings, null, 2));
+          const dlAnchor = document.createElement('a');
+          dlAnchor.setAttribute('href', dataStr);
+          dlAnchor.setAttribute('download', `scheduly-backup-${Date.now()}.json`);
+          document.body.appendChild(dlAnchor);
+          dlAnchor.click();
+          dlAnchor.remove();
+          showToast('Exported bookings to JSON');
+        },
+
+        resetHostDefaults: function () {
+          if (confirm('Reset all host availability and settings to default? Existing bookings will remain intact.')) {
+            state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+            saveStorage(STORAGE_KEYS.SETTINGS, state.settings);
+            renderHostDashboard();
+            renderLogo();
+            showToast('Settings reset to defaults');
+          }
+        },
+
+        // Sharing URL (Strict Visitor Link Protection)
+        copyShareLink: function () {
+          // Always copy clean URL without #admin, #host or admin query params
+          const shareUrl = window.location.origin + window.location.pathname;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+              showToast('Client booking link copied! (Host controls hidden for visitors)');
+            }).catch(() => {
+              showToast('Client Link: ' + shareUrl);
+            });
+          } else {
+            showToast('Client Link: ' + shareUrl);
+          }
+        }
+      };
+
+      // ----------------------------------------------------------------------
+      // INITIAL BOOTSTRAP & ROUTING
+      // ----------------------------------------------------------------------
+      function checkAdminRoute(autoPrompt = true) {
+        const hash = (window.location.hash || '').toLowerCase();
+        const searchParams = new URLSearchParams(window.location.search);
+        const isAdminTrigger = hash === '#admin' || hash === '#host' || searchParams.has('admin') || searchParams.has('host');
+
+        if (isAdminTrigger) {
+          if (state.isHostAuthenticated) {
+            window.app.switchView('host');
+          } else if (autoPrompt) {
+            window.app.promptHostLogin();
+          }
+        } else {
+          window.app.switchView('public');
+        }
+      }
+
+      function init() {
+        // Check if host previously selected "Remember on this browser"
+        if (localStorage.getItem('scheduly_host_auth_session') === 'true') {
+          state.isHostAuthenticated = true;
+        }
+
+        applyTheme(state.theme);
+        populateTimezones();
+        renderHostInfo();
+        renderEventTypes();
+        renderCalendar();
+        renderSlots();
+        updateBadgeCounts();
+        setupLogoDropzone();
+        syncHostAuthState();
+
+        // Check if accessed directly via admin route or default client link
+        checkAdminRoute(true);
+
+        // Global Keyboard Shortcut: Ctrl+Shift+A or Cmd+Shift+A or Alt+A triggers Host Gateway
+        window.addEventListener('keydown', (e) => {
+          const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+          const isShortcut = (isMac && e.metaKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) ||
+                             (!isMac && e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) ||
+                             (e.altKey && (e.key === 'a' || e.key === 'A' || e.key === 'h' || e.key === 'H'));
+
+          if (isShortcut) {
+            e.preventDefault();
+            if (!state.isHostAuthenticated) {
+              window.app.promptHostLogin();
+            } else {
+              window.app.switchView(state.currentView === 'host' ? 'public' : 'host');
+            }
+          }
+        });
+
+        // Hash change listener (e.g. clicking #admin)
+        window.addEventListener('hashchange', () => {
+          checkAdminRoute(true);
+        });
+      }
+
+      // Run on DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

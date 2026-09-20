@@ -1,0 +1,6 @@
+{
+  "name": "Scheduly",
+  "description": "Calendar booking tool developed by Flynn J.P. Featuring custom logo uploads, custom date range booking horizons, EmailJS automated reminders, timezone auto-detection, and host privacy controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

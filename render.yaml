@@ -1,0 +1,16 @@
+# Render Blueprint for Scheduly (Flynn J.P)
+# Deploy as a high-performance static web application on Render
+services:
+  - type: web
+    name: scheduly
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
