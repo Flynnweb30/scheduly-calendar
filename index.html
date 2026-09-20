@@ -3837,7 +3837,7 @@
         },
 
         copyGoogleAppsScriptCode: function () {
-          const codeEl = document.getElementById('sheets-app-script-code');
+          const codeEl = document.getElementById('sheets-app-script-code') || document.getElementById('google-apps-script-code');
           if (!codeEl) return;
           const code = codeEl.innerText || codeEl.textContent;
           if (navigator.clipboard && navigator.clipboard.writeText) {
